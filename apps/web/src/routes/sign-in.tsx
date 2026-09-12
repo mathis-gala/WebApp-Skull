@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { projectConfig } from "@workspace/config/project"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -34,11 +35,22 @@ const searchSchema = z.object({
 
 const signInSchema = z.object({
   email: z.email("Enter a valid email address"),
-  password: z.string().min(8, "Password must contain at least 8 characters"),
+  password: z
+    .string()
+    .min(
+      projectConfig.auth.passwordMinLength,
+      `Password must contain at least ${projectConfig.auth.passwordMinLength} characters`
+    ),
 })
 
 const signUpSchema = signInSchema.extend({
-  name: z.string().trim().min(2, "Name must contain at least 2 characters"),
+  name: z
+    .string()
+    .trim()
+    .min(
+      projectConfig.auth.userNameMinLength,
+      `Name must contain at least ${projectConfig.auth.userNameMinLength} characters`
+    ),
 })
 
 function getSafeRedirect(redirect: string | undefined) {
