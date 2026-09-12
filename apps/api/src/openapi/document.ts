@@ -17,5 +17,9 @@ export function createOpenApiDocument(app: INestApplication) {
 }
 
 export function setupOpenApi(app: INestApplication) {
-  SwaggerModule.setup(projectConfig.api.docsPath, app, createOpenApiDocument(app))
+  SwaggerModule.setup(
+    projectConfig.api.docsPath,
+    app,
+    createOpenApiDocument(app)
+  )
 }
