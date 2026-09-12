@@ -7,6 +7,7 @@ const input = {
   to: "test@example.test",
   url: "https://example.test?token=private-token",
   locale: "fr",
+  requestId: "request-test-1",
 } as const
 
 describe("tracked auth email dispatch", () => {
@@ -26,7 +27,13 @@ describe("tracked auth email dispatch", () => {
     )
     dispatcher.enqueue(input)
     await dispatcher.drain()
-    expect(events).toEqual([{ event: "email.failed", kind: "verification" }])
+    expect(events).toEqual([
+      {
+        event: "email.failed",
+        kind: "verification",
+        requestId: "request-test-1",
+      },
+    ])
   })
   it("bounds shutdown when delivery never settles", async () => {
     const events: Array<EmailEvent> = []

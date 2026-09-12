@@ -11,6 +11,12 @@ Les écrans et les emails utilisent le catalogue français Paraglide. Les routes
 visibles sont françaises, sans préfixe de langue. Les emails sont capturés par
 Mailpit en développement ; aucun fournisseur réel n’est présupposé.
 
+Les migrations et fixtures passent par une garde de cible locale. Deux comptes
+auth fictifs peuvent être créés de façon idempotente. L’API journalise les
+requêtes avec Pino, expose une readiness PostgreSQL bornée et ferme ses
+ressources à l’arrêt. La CI rejoue contrôles rapides, intégration et E2E dans
+des environnements distincts.
+
 Le domaine produit au-delà de l’authentification reste à définir. Ne pas ajouter
 une fonctionnalité de démonstration pour combler ce vide.
 
@@ -22,8 +28,8 @@ une fonctionnalité de démonstration pour combler ce vide.
 - [REUSE.md](REUSE.md) : catalogue des éléments partagés.
 - [DEVELOPMENT.md](DEVELOPMENT.md) : environnement et commandes.
 
-## Travail prévu
+## Limite actuelle
 
-Les seeders généraux, les logs HTTP structurés avec redaction, la readiness SQL
-et la CI restent à livrer. Le suivi des envois email est local au processus,
-sans file durable ni garantie de livraison après un crash.
+Le suivi des envois email est local au processus, sans file durable ni garantie
+de livraison après un crash. Aucun environnement de staging ou fournisseur SMTP
+réel n’est exercé par la CI.

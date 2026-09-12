@@ -24,6 +24,10 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm check
+pnpm docs:check
+pnpm project:check
+pnpm test:integration
+pnpm test:e2e
 pnpm api:generate
 pnpm api:check
 ```
@@ -37,15 +41,40 @@ secret, ni SMTP. Avec l'API locale démarrée, Swagger est disponible sur
 `http://localhost:3001/docs`. Cette interface n'est pas montée lorsque
 `NODE_ENV=production`.
 
-Les tests rapides n'ont besoin ni d'une base ni d'un secret réel. Ne lancer
-`pnpm db:migrate` que sur une base locale neuve et explicitement configurée.
-La migration initiale de ce dépôt est une baseline auth seule ; elle n'est pas
-compatible avec une base créée par un ancien historique.
+Les tests rapides n'ont besoin ni d'une base ni d'un secret réel. La migration
+initiale est une baseline auth seule ; elle n'est pas compatible avec une base
+créée par un ancien historique.
 
-## État des outils
+`pnpm docs:check` vérifie la présence des huit documents et leurs liens locaux.
+`pnpm project:check` protège les frontières web/serveur, les métadonnées privées,
+le retrait des anciennes technologies et les versions des images/actions.
 
-Les seeders, les logs HTTP structurés, la vérification SQL de readiness et la CI
-restent à livrer.
+## Migrations et fixtures
+
+`pnpm setup` exige un `.env` local, démarre les services Compose puis applique
+les migrations. Avant de charger le client DB, le CLI exige `APP_ENV=development`,
+un hôte loopback et la base exacte `webapp_skull`. En test, il exige la base
+`skull_auth_test` et l'identifiant d’ownership créé par le harness. Staging et
+production sont toujours refusés par ces outils locaux.
+
+Le seed n'est jamais implicite :
+
+```bash
+pnpm db:seed -- --scenario auth
+```
+
+`DATABASE_FIXTURE_MODE=auth` doit être présent. La commande crée, si absents,
+`verified@example.test` et `unverified@example.test` avec le mot de passe local
+public `Local-Only-Auth-2026!`. Elle conserve mot de passe et état de tout compte
+déjà présent, ne crée aucune session durable et peut être relancée.
+
+Le nettoyage est volontaire, utilise la même garde et supprime uniquement ces
+deux adresses avec leurs dépendances auth et jetons de réinitialisation, dans
+une transaction :
+
+```bash
+pnpm db:seed -- --scenario auth --clean
+```
 
 ## Emails locaux
 
@@ -65,15 +94,33 @@ virgules ; une adresse absente est refusée, jamais réécrite.
 ```bash
 pnpm --filter @workspace/api exec playwright install chromium
 pnpm test:integration
+pnpm test:e2e
 ```
 
 Le harness crée un projet Compose UUID distinct, PostgreSQL en tmpfs et Mailpit
 sans relais, avec ports loopback dynamiques. Il ne lit pas `.env`, n’utilise pas
 les volumes dev et n’accepte pas une URL de base arbitraire. Les migrations sont
 appliquées seulement à cette base possédée. L’arrêt retire uniquement ce projet.
-Docker doit fonctionner et pouvoir télécharger les images versionnées. Chromium
-exerce le parcours mobile, avec captures locales sous `output/playwright`.
-Le serveur Vite de test utilise `envDir: false` et des ports réservés au test.
+Chaque commande crée son propre projet Compose UUID, applique la migration gardée
+et relance le seed deux fois. `test:integration` couvre DB, sessions, email et
+sécurité API ; `test:e2e` exerce le parcours mobile avec captures locales sous
+`output/playwright`. Le serveur Vite utilise `envDir: false` et des ports réservés
+au test. Docker doit fonctionner et pouvoir télécharger les images versionnées.
+
+## Logs et santé
+
+En développement, les logs Pino sont lisibles ; staging et production émettent
+du JSON. Chaque réponse porte `x-request-id`. Les lignes HTTP contiennent méthode,
+chemin sans query, statut et durée, sans headers, body, cookie, adresse email, IP,
+token, URL d’action ou message SMTP. `/health/live` ne contacte aucun service ;
+`/health/ready` sonde PostgreSQL et répond 503 après deux secondes au plus.
+
+## CI
+
+`.github/workflows/ci.yml` utilise Node 24.21.0 et pnpm 12.4.1. Les actions sont
+épinglées à des commits et les images à des versions. Trois jobs sans compte
+externe exécutent respectivement `pnpm check`, l'intégration et l'E2E ; ces deux
+derniers créent leurs propres services éphémères, jamais le Compose dev.
 
 ## Traductions
 

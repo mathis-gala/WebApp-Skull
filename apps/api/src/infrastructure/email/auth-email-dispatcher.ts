@@ -7,7 +7,10 @@ const EMAIL_DRAIN_TIMEOUT_MS = 15_000 // 15 seconds
 export interface EmailEvent {
   event: "email.accepted" | "email.failed" | "email.drain_timeout"
   kind?: AuthEmailInput["kind"]
+  requestId?: string
 }
+
+type AuthEmailDispatchInput = AuthEmailInput & Readonly<{ requestId?: string }>
 
 export class AuthEmailDispatcher {
   private readonly pending = new Set<Promise<void>>()
@@ -17,19 +20,32 @@ export class AuthEmailDispatcher {
     private readonly report: (event: EmailEvent) => void
   ) {}
 
-  enqueue(input: AuthEmailInput) {
+  enqueue(input: AuthEmailDispatchInput) {
+    const context = input.requestId ? { requestId: input.requestId } : {}
     if (this.stopping) {
-      this.report({ event: "email.failed", kind: input.kind })
+      this.report({
+        event: "email.failed",
+        kind: input.kind,
+        ...context,
+      })
       return
     }
     const operation = Promise.resolve()
       .then(async () => {
         const message = await renderAuthEmail(input)
         await this.sender.send(message)
-        this.report({ event: "email.accepted", kind: input.kind })
+        this.report({
+          event: "email.accepted",
+          kind: input.kind,
+          ...context,
+        })
       })
       .catch(() => {
-        this.report({ event: "email.failed", kind: input.kind })
+        this.report({
+          event: "email.failed",
+          kind: input.kind,
+          ...context,
+        })
       })
     this.pending.add(operation)
     void operation.then(() => {

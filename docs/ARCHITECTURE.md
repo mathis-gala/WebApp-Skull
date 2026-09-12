@@ -71,9 +71,38 @@ publiques conservent leurs données et leurs requêtes en cours.
 
 ## Santé
 
-La liveness indique que le processus répond. La readiness est présente mais ne
-sonde pas encore PostgreSQL ; cette vérification bornée sera ajoutée avec le
-lot d'observabilité.
+La liveness indique seulement que le processus répond. La readiness exécute
+`select 1` sur PostgreSQL et retourne 503 si la requête échoue ou dépasse deux
+secondes. Elle ne sonde pas le transport email et ne divulgue aucun détail de
+connexion.
+
+## Journaux et arrêt
+
+Un middleware Pino placé avant CORS et Better Auth crée l’identifiant de requête.
+Il le renvoie dans `x-request-id`, le lie aux logs Nest et le transmet au
+dispatcher email. Le log HTTP contient méthode, chemin sans query, statut et
+durée. Les headers, bodies, cookies, tokens, emails, IP, URLs d’action et messages
+fournisseur n’en font pas partie ; la redaction Pino forme une seconde barrière.
+Le développement utilise `pino-pretty`, tandis que staging et production restent
+en JSON.
+
+À SIGINT ou SIGTERM, le serveur cesse d’accepter des requêtes, le dispatcher
+attend les emails suivis au plus 15 secondes, puis la connexion PostgreSQL est
+fermée.
+
+## Migrations et fixtures
+
+Les commandes d’écriture vérifient `APP_ENV`, le protocole, l’hôte loopback et
+le nom exact de la base avant de charger le client PostgreSQL. Les tests exigent
+en plus un identifiant d’environnement éphémère possédé ; le seed exige le mode
+fixture `auth`. Aucun migrateur ou seed ne s’exécute au démarrage de l’API.
+
+Le registre initial contient deux comptes `example.test`. La création passe par
+Better Auth pour produire le hash ; une relance conserve intégralement un compte
+déjà présent. Le compte vérifié n’est marqué comme tel qu’après sa création.
+Le nettoyage optionnel supprime seulement ces deux adresses, leurs dépendances
+auth et les jetons de réinitialisation dont la valeur référence leur identifiant,
+dans une transaction. Il reste explicite.
 
 ## Authentification et emails
 

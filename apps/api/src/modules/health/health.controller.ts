@@ -1,20 +1,56 @@
-import { Controller, Get } from "@nestjs/common"
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  Inject,
+  ServiceUnavailableException,
+} from "@nestjs/common"
+import {
+  ApiOkResponse,
+  ApiProperty,
+  ApiServiceUnavailableResponse,
+} from "@nestjs/swagger"
 
 import { Public } from "../../infrastructure/auth/guard.js"
+import { ApiErrorDto } from "../../infrastructure/http/api-error.dto.js"
+import {
+  DATABASE_READINESS,
+  READINESS_TIMEOUT,
+  waitForReadiness,
+} from "./readiness.js"
+import type { DatabaseReadiness } from "./readiness.js"
 
-type HealthResponse = Readonly<{ status: "ok" }>
+class HealthResponseDto {
+  @ApiProperty({ enum: ["ok"] })
+  status!: "ok"
+}
 
 @Controller("health")
 export class HealthController {
+  constructor(
+    @Inject(DATABASE_READINESS)
+    private readonly databaseReady: DatabaseReadiness,
+    @Inject(READINESS_TIMEOUT) private readonly readinessTimeoutMs: number
+  ) {}
+
   @Public()
   @Get("live")
-  live(): HealthResponse {
+  live(): HealthResponseDto {
     return { status: "ok" }
   }
 
   @Public()
   @Get("ready")
-  ready(): HealthResponse {
-    return { status: "ok" }
+  @ApiOkResponse({ type: HealthResponseDto })
+  @ApiServiceUnavailableResponse({ type: ApiErrorDto })
+  async ready(): Promise<HealthResponseDto> {
+    try {
+      await waitForReadiness(this.databaseReady, this.readinessTimeoutMs)
+      return { status: "ok" }
+    } catch {
+      throw new ServiceUnavailableException({
+        statusCode: HttpStatus.SERVICE_UNAVAILABLE,
+      })
+    }
   }
 }

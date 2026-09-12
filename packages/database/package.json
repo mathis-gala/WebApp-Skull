@@ -6,11 +6,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "db:generate": "drizzle-kit generate --config=drizzle.generate.config.ts",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "pnpm build && node --env-file-if-exists=../../.env dist/cli/migrate.js",
     "db:studio": "drizzle-kit studio",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "lint": "eslint",
     "format": "prettier --write \"**/*.ts\"",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,7 +24,8 @@
     "drizzle-kit": "0.31.10",
     "dotenv": "17.2.2",
     "eslint": "9.36.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
   },
   "exports": {
     ".": {
@@ -33,6 +35,10 @@
     "./schema": {
       "types": "./src/schema/index.ts",
       "default": "./dist/schema/index.js"
+    },
+    "./target": {
+      "types": "./src/target.ts",
+      "default": "./dist/target.js"
     }
   }
 }

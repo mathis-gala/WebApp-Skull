@@ -49,6 +49,12 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
   des controllers Nest ; ne pas l'appliquer aux routes Better Auth.
 - `packages/database/src/client.ts` : création et fermeture du client Drizzle.
 - `packages/database/src/config.ts` : réglages du pool PostgreSQL.
+- `packages/database/src/target.ts` : garde commune exécutée avant toute
+  ouverture de connexion par les CLI migration et seed.
+- `apps/api/src/modules/health/readiness.ts` : contrat de sonde et timeout de
+  readiness injectables.
+- `apps/api/src/infrastructure/logging/logging.ts` : logger Pino et contrat de
+  sérialisation HTTP nettoyé.
 - `apps/api/src/openapi/config.ts` : chemin de documentation et version de l'API.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa

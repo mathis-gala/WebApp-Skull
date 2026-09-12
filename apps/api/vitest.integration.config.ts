@@ -5,7 +5,11 @@ export default defineConfig({
   plugins: [swc.vite()],
   test: {
     environment: "node",
-    include: ["test/**/*.integration.ts"],
+    include: [
+      process.env.AUTH_TEST_SUITE === "e2e"
+        ? "test/**/*.e2e.ts"
+        : "test/**/*.integration.ts",
+    ],
     testTimeout: 30000,
     hookTimeout: 30000,
   },
