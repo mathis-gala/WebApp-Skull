@@ -368,9 +368,6 @@ importers:
 
   packages/database:
     dependencies:
-      '@workspace/config':
-        specifier: workspace:*
-        version: link:../config
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(kysely@0.28.17)(postgres@3.4.7)

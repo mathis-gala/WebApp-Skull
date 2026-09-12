@@ -1,6 +1,6 @@
 import { useForm } from "@tanstack/react-form"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
-import { projectConfig } from "@workspace/config/project"
+import { authFormConfig } from "@/features/auth/schemas/auth-form.config"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -38,8 +38,8 @@ const signInSchema = z.object({
   password: z
     .string()
     .min(
-      projectConfig.auth.passwordMinLength,
-      `Password must contain at least ${projectConfig.auth.passwordMinLength} characters`
+      authFormConfig.passwordMinLength,
+      `Password must contain at least ${authFormConfig.passwordMinLength} characters`
     ),
 })
 
@@ -48,8 +48,8 @@ const signUpSchema = signInSchema.extend({
     .string()
     .trim()
     .min(
-      projectConfig.auth.userNameMinLength,
-      `Name must contain at least ${projectConfig.auth.userNameMinLength} characters`
+      authFormConfig.userNameMinLength,
+      `Name must contain at least ${authFormConfig.userNameMinLength} characters`
     ),
 })
 

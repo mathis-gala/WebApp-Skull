@@ -35,3 +35,8 @@ le TypeScript. Le web utilise le mode de résolution Bundler.
 La liveness indique que le processus répond. La readiness est présente mais ne
 sonde pas encore PostgreSQL ; cette vérification bornée sera ajoutée avec le
 lot d'observabilité.
+
+Les constantes appartiennent au module qui possède leur sens : contraintes de
+formulaire dans la feature auth web, options PostgreSQL dans database. Seule
+l’identité publique du projet est commune via `@workspace/config/project`, un
+module JavaScript accompagné de sa déclaration TypeScript.

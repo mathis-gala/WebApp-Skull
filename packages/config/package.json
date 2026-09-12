@@ -8,6 +8,10 @@
     "typescript"
   ],
   "exports": {
-    "./project": "./src/project.ts"
+    "./project": {
+      "types": "./src/project.d.ts",
+      "default": "./src/project.js"
+    },
+    "./typescript/*": "./typescript/*"
   }
 }

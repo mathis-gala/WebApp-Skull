@@ -1,12 +1,12 @@
 import { drizzle } from "drizzle-orm/postgres-js"
 import postgres from "postgres"
-import { projectConfig } from "@workspace/config/project"
 
+import { databaseConfig } from "./config.js"
 import * as schema from "./schema/index.js"
 
 export function createDatabase(databaseUrl: string) {
   const client = postgres(databaseUrl, {
-    max: projectConfig.database.maxConnections,
+    max: databaseConfig.maxConnections,
     prepare: false,
   })
   const db = drizzle({
