@@ -3,6 +3,7 @@ export type AuthSession = Readonly<{
     id: string
     name: string
     email: string
+    emailVerified: boolean
   }>
   session: Readonly<{
     id: string

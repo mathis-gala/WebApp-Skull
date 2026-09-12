@@ -24,7 +24,18 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm check
+pnpm api:generate
+pnpm api:check
 ```
+
+`pnpm api:generate` reconstruit `apps/api/openapi.json` depuis les controllers
+Nest puis `apps/web/src/lib/api/schema.d.ts`. Exécuter cette commande après un
+changement de controller ou DTO et versionner les deux artefacts.
+`pnpm api:check` régénère dans un répertoire temporaire et échoue en cas de
+dérive. La génération utilise des providers inertes et ne demande ni base, ni
+secret, ni SMTP. Avec l'API locale démarrée, Swagger est disponible sur
+`http://localhost:3001/docs`. Cette interface n'est pas montée lorsque
+`NODE_ENV=production`.
 
 Les tests rapides n'ont besoin ni d'une base ni d'un secret réel. Ne lancer
 `pnpm db:migrate` que sur une base locale neuve et explicitement configurée.

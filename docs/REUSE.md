@@ -10,13 +10,21 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 ## Web
 
 - `apps/web/src/lib/auth/auth-client.ts` : client Better Auth partagé.
+- `apps/web/src/lib/auth/current-user.ts` : requête d'identité, vérification
+  fraîche avant une route protégée et purge de tout cache privé lors d'une
+  connexion ou déconnexion.
+- `apps/web/src/lib/api/client.ts` : client OpenAPI typé, configuré avec les
+  cookies de session.
 - `apps/web/src/lib/query/query-client.ts` : configuration TanStack Query.
 - `apps/web/src/lib/api/config.ts` : URL publique de l'API.
 
 ## Serveur
 
 - `apps/api/src/infrastructure/auth/guard.ts` : protection globale Nest et
-  marqueur `Public`.
+  décorateurs `Public` et `CurrentUser`.
+- `packages/contracts/src/identity.ts` : forme publique de l'identité courante.
+- `apps/api/src/infrastructure/http/http-error.filter.ts` : enveloppe d'erreur
+  des controllers Nest ; ne pas l'appliquer aux routes Better Auth.
 - `packages/database/src/client.ts` : création et fermeture du client Drizzle.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa

@@ -13,6 +13,7 @@ Application web TypeScript avec authentification par email et mot de passe.
 | Tailwind CSS et shadcn/ui             | Styles et primitives d'interface              |
 | Better Auth                           | Inscription, connexion et sessions par cookie |
 | Zod                                   | Validation des données aux frontières         |
+| OpenAPI, openapi-typescript et fetch  | Contrat HTTP et client web typé               |
 | Drizzle ORM et PostgreSQL 17          | Persistance et migrations                     |
 | Vitest                                | Tests unitaires et HTTP                       |
 | Docker Compose                        | Services locaux                               |
@@ -33,6 +34,7 @@ pnpm dev
 | Web        | http://localhost:3000             |
 | API        | http://localhost:3001             |
 | Santé API  | http://localhost:3001/health/live |
+| Swagger    | http://localhost:3001/docs        |
 | PostgreSQL | localhost:5433                    |
 
 ## Commandes
@@ -41,6 +43,8 @@ pnpm dev
 pnpm dev             # démarre l'API et le web
 pnpm check           # format, lint, types, tests et builds
 pnpm test            # tests rapides Vitest
+pnpm api:generate    # régénère OpenAPI et les types du client web
+pnpm api:check       # détecte une dérive des contrats générés
 pnpm db:generate     # génère une migration depuis le schéma
 pnpm db:migrate      # applique les migrations à la cible configurée
 pnpm db:studio       # ouvre Drizzle Studio
@@ -64,9 +68,11 @@ packages/ui          primitives et styles partagés
 docs                 contexte durable du projet
 ```
 
-Better Auth expose ses routes sous `/api/auth`. Le client utilise des cookies
-de session avec `credentials: "include"`. La base initiale contient seulement
-les tables nécessaires à l'authentification.
+Better Auth expose ses routes sous `/api/auth`. Les controllers Nest exposent
+leur contrat dans `apps/api/openapi.json` ; le web le consomme avec
+`openapi-fetch`. Les deux clients utilisent les cookies de session avec
+`credentials: "include"`. La base initiale contient seulement les tables
+nécessaires à l'authentification.
 
 Lire [docs/CONTEXT.md](docs/CONTEXT.md) pour l'état actuel et
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) pour les conventions locales.

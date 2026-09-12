@@ -7,6 +7,10 @@ déconnexion et session par cookie. L'API utilise NestJS sur Express ; Better
 Auth possède les endpoints `/api/auth/*`. PostgreSQL stocke uniquement les
 données d'authentification.
 
+L'accueil est une route cliente protégée. Il charge l'identité depuis
+`GET /api/me`, dont le contrat OpenAPI génère le client TypeScript du web. Une
+session sans adresse vérifiée est refusée par les routes Nest protégées.
+
 Le domaine produit au-delà de l'authentification n'est pas encore défini.
 Aucune fonctionnalité de démonstration ne doit être ajoutée pour combler ce
 vide.
@@ -21,6 +25,5 @@ vide.
 
 ## Travail prévu
 
-Le client HTTP OpenAPI, la vérification d'adresse, la récupération de mot de
-passe, les emails, les seeders, les logs structurés et la CI ne sont pas encore
-livrés.
+La vérification d'adresse côté email, la récupération de mot de passe, les
+emails, les seeders, les logs structurés et la CI ne sont pas encore livrés.
