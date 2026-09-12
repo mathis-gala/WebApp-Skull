@@ -1,5 +1,5 @@
 import { schema } from "@workspace/database"
-import { projectConfig } from "@workspace/config/project"
+import projectConfig from "@workspace/config/project" with { type: "json" }
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 

@@ -38,3 +38,9 @@ jour dans le même changement tous les documents dont les faits ont évolué :
 Retirer les informations obsolètes au lieu d'accumuler un journal. Signaler les
 commandes exécutées, leurs résultats, les documents mis à jour et les limites
 de validation.
+
+## Historique Git
+
+Préférer rebase pour synchroniser les branches ; ne pas créer de commit de merge.
+La réécriture d’une branche déjà publiée et le force-push nécessitent une
+autorisation explicite. Cette préférence ne constitue pas cette autorisation.

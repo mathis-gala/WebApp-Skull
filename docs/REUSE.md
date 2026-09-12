@@ -2,7 +2,7 @@
 
 ## Configuration et contrats transverses
 
-- `packages/config/src/project.js` : identité publique du produit (nom et
+- `packages/config/src/project.json` : identité publique du produit (nom et
   description), commune au web et à l'API. Les réglages techniques restent dans
   le module qui les possède.
 - `packages/contracts/src/common.ts` : schéma de l'enveloppe d'erreur échangée

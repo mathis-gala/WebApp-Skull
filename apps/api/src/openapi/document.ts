@@ -1,5 +1,5 @@
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
-import { projectConfig } from "@workspace/config/project"
+import projectConfig from "@workspace/config/project" with { type: "json" }
 import { cleanupOpenApiDoc } from "nestjs-zod"
 
 import { openApiConfig } from "./config.js"

@@ -7,7 +7,7 @@ import {
   useRouter,
 } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
-import { projectConfig } from "@workspace/config/project"
+import projectConfig from "@workspace/config/project" with { type: "json" }
 import { Button } from "@workspace/ui/components/button"
 import { Separator } from "@workspace/ui/components/separator"
 import { Toaster } from "@workspace/ui/components/sonner"

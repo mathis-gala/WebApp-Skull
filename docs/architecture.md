@@ -51,8 +51,10 @@ Better Auth et ne constitue pas un réglage public du projet.
 
 Les imports serveur utilisent NodeNext et des extensions `.js` explicites dans
 le TypeScript. Le web utilise le mode de résolution Bundler.
-L'identité publique est un module JavaScript avec déclaration TypeScript, lisible
-directement par Node sans compilation ni chargement TypeScript à l'exécution.
+L'identité publique est un fichier JSON importé avec l'attribut `type: json`.
+TypeScript infère sa structure via `resolveJsonModule` ; aucune déclaration de
+type manuelle ne duplique ces données. Les configurations techniques restent
+dans leurs modules TypeScript et les valeurs de déploiement à la frontière env.
 
 Le web lit l'URL publique uniquement depuis `apps/web/src/lib/api/config.ts`.
 Le client OpenAPI envoie les cookies avec chaque requête. L'accueil désactive
