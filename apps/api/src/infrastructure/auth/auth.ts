@@ -1,4 +1,5 @@
 import { schema } from "@workspace/database"
+import { projectConfig } from "@workspace/config/project"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
@@ -9,7 +10,7 @@ import type { ApiEnv } from "../../config/env.js"
 
 export function createAuth(db: Database, env: ApiEnv) {
   return betterAuth({
-    appName: "WebApp Skull",
+    appName: projectConfig.name,
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.WEB_URL],

@@ -1,8 +1,13 @@
 {
   "name": "@workspace/config",
   "version": "0.0.0",
+  "type": "module",
   "private": true,
   "files": [
+    "src",
     "typescript"
-  ]
+  ],
+  "exports": {
+    "./project": "./src/project.ts"
+  }
 }
