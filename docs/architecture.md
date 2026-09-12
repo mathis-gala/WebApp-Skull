@@ -42,6 +42,11 @@ métier ou un port concret ne le justifie pas.
 - Persistance Drizzle : `packages/database`.
 - Primitive visuelle partagée : `packages/ui`.
 
+Les fichiers de règles de validation portent le suffixe `.constraints.ts` ;
+les réglages techniques gardent `.config.ts` ou leur module `config.ts`. Le
+minimum du mot de passe est possédé par le contrat auth partagé et appliqué
+explicitement par Better Auth et le formulaire.
+
 Les constantes restent auprès de leur propriétaire : contraintes de formulaire
 dans la feature web, réglages PostgreSQL dans `packages/database`, configuration
 OpenAPI dans l'API. `packages/config` ne partage à l'exécution que l'identité
@@ -69,8 +74,3 @@ précédent ne reste visible.
 La liveness indique que le processus répond. La readiness est présente mais ne
 sonde pas encore PostgreSQL ; cette vérification bornée sera ajoutée avec le
 lot d'observabilité.
-
-Les constantes appartiennent au module qui possède leur sens : contraintes de
-formulaire dans la feature auth web, options PostgreSQL dans database. Seule
-l’identité publique du projet est commune via `@workspace/config/project`, un
-module JavaScript accompagné de sa déclaration TypeScript.

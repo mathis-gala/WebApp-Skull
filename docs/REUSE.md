@@ -26,8 +26,12 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `apps/web/src/lib/query/query-client.ts` : configuration TanStack Query.
 - `apps/web/src/lib/api/config.ts` : URL publique de l'API.
 - `apps/web/src/lib/api/http-status.ts` : statuts nommés utilisés par le client.
-- `apps/web/src/features/auth/schemas/auth-form.config.ts` : contraintes de
-  saisie des formulaires d'authentification ; elles ne configurent pas Better Auth.
+- `apps/web/src/features/auth/schemas/auth-form.constraints.ts` : contraintes de
+  saisie des formulaires d'authentification. Le minimum du mot de passe vient du
+  contrat auth partagé, également appliqué par Better Auth.
+
+- `packages/contracts/src/auth.constraints.ts` : minimum du mot de passe partagé
+  entre validation web et configuration serveur Better Auth.
 
 ## Serveur
 

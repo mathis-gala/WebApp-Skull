@@ -26,7 +26,7 @@ import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { z } from "zod"
 
-import { authFormConfig } from "@/features/auth/schemas/auth-form.config"
+import { authFormConstraints } from "@/features/auth/schemas/auth-form.constraints"
 import { authClient } from "@/lib/auth/auth-client"
 import { clearPrivateCache } from "@/lib/auth/current-user"
 
@@ -39,8 +39,8 @@ const signInSchema = z.object({
   password: z
     .string()
     .min(
-      authFormConfig.passwordMinLength,
-      `Password must contain at least ${authFormConfig.passwordMinLength} characters`
+      authFormConstraints.passwordMinLength,
+      `Password must contain at least ${authFormConstraints.passwordMinLength} characters`
     ),
 })
 
@@ -49,8 +49,8 @@ const signUpSchema = signInSchema.extend({
     .string()
     .trim()
     .min(
-      authFormConfig.userNameMinLength,
-      `Name must contain at least ${authFormConfig.userNameMinLength} characters`
+      authFormConstraints.userNameMinLength,
+      `Name must contain at least ${authFormConstraints.userNameMinLength} characters`
     ),
 })
 
