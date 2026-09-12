@@ -8,6 +8,13 @@
       "when": 1789227870705,
       "tag": "0000_skinny_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789241560154,
+      "tag": "0001_right_black_cat",
+      "breakpoints": true
     }
   ]
 }

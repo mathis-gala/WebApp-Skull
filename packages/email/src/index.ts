@@ -1,0 +1,5 @@
+export { getEmailConfig } from "./config.js"
+export type { EmailConfig } from "./config.js"
+export { createSmtpSender, MemoryEmailSender } from "./sender.js"
+export { renderAuthEmail } from "./auth-email.js"
+export type { AuthEmailInput } from "./auth-email.js"

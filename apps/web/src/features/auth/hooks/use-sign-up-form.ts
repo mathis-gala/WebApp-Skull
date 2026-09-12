@@ -1,0 +1,36 @@
+import { useForm } from "@tanstack/react-form"
+import { useRouter } from "@tanstack/react-router"
+import { useState } from "react"
+import { network_error } from "@workspace/i18n/messages"
+import { authClient } from "@/lib/auth/auth-client"
+import { clearPrivateCache } from "@/lib/auth/current-user"
+import { signUpSchema } from "../schemas/auth-form"
+import { authErrorMessage } from "../auth-error"
+
+export function useSignUpForm() {
+  const router = useRouter()
+  const [serverError, setServerError] = useState<string>()
+  const form = useForm({
+    defaultValues: { name: "", email: "", password: "" },
+    validators: { onSubmit: signUpSchema },
+    onSubmit: async ({ value }) => {
+      setServerError(undefined)
+      try {
+        const result = await authClient.signUp.email({
+          ...value,
+          callbackURL: `${window.location.origin}/adresse-confirmee`,
+        })
+        if (result.error) {
+          setServerError(authErrorMessage(result.error))
+          return
+        }
+        await clearPrivateCache(router.options.context.queryClient)
+        await router.navigate({ to: "/verification-email" })
+        await router.invalidate()
+      } catch {
+        setServerError(network_error())
+      }
+    },
+  })
+  return { form, serverError }
+}

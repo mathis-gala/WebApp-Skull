@@ -16,6 +16,11 @@ Application web TypeScript avec authentification par email et mot de passe.
 | OpenAPI, openapi-typescript et fetch  | Contrat HTTP et client web typé               |
 | Drizzle ORM et PostgreSQL 17          | Persistance et migrations                     |
 | Vitest                                | Tests unitaires et HTTP                       |
+| React Email et Nodemailer             | Emails HTML/texte et transport SMTP           |
+| Mailpit                               | Capture email locale                          |
+| Paraglide JS                          | Catalogue français typé                       |
+| Sonner                                | Notifications accessibles                     |
+| Playwright                            | Parcours navigateur                           |
 | Docker Compose                        | Services locaux                               |
 
 ## Démarrage
@@ -35,6 +40,7 @@ pnpm dev
 | API        | http://localhost:3001             |
 | Santé API  | http://localhost:3001/health/live |
 | Swagger    | http://localhost:3001/docs        |
+| Mailpit    | http://localhost:8025             |
 | PostgreSQL | localhost:5433                    |
 
 ## Commandes
@@ -43,18 +49,19 @@ pnpm dev
 pnpm dev             # démarre l'API et le web
 pnpm check           # format, lint, types, tests et builds
 pnpm test            # tests rapides Vitest
+pnpm test:integration # auth réelle dans PostgreSQL/Mailpit isolés
 pnpm api:generate    # régénère OpenAPI et les types du client web
 pnpm api:check       # détecte une dérive des contrats générés
 pnpm db:generate     # génère une migration depuis le schéma
 pnpm db:migrate      # applique les migrations à la cible configurée
 pnpm db:studio       # ouvre Drizzle Studio
-pnpm dev:infra       # démarre PostgreSQL
+pnpm dev:infra       # démarre PostgreSQL et Mailpit
 pnpm dev:down        # arrête les services sans supprimer leurs données
 ```
 
 `pnpm setup` démarre PostgreSQL et applique les migrations. Il ne crée aucune
-donnée applicative. Le développement des emails, des seeders et de la CI est
-planifié mais n'est pas encore livré.
+donnée applicative. Les seeders et la CI restent à livrer. Les emails
+locaux sont consultables dans Mailpit.
 
 ## Structure
 
@@ -64,6 +71,8 @@ apps/web             application TanStack Start
 packages/contracts   schémas et contrats partagés
 packages/core        règles métier et ports lorsqu'un domaine les exige
 packages/database    schémas, migrations et client Drizzle
+packages/email       modèles et transport email serveur
+packages/i18n        catalogue français et fonctions Paraglide
 packages/ui          primitives et styles partagés
 docs                 contexte durable du projet
 ```

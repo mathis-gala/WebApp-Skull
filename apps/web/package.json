@@ -10,7 +10,7 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "pnpm --filter @workspace/i18n build && tsc --noEmit"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4",
@@ -33,7 +33,9 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "tailwindcss": "^4",
-    "zod": "4.6.2"
+    "zod": "4.6.2",
+    "@workspace/i18n": "workspace:*",
+    "sonner": "2.0.7"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "0.8.5",

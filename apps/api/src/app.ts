@@ -54,7 +54,20 @@ export async function createApiApp(
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     })
   )
-  expressApp.use("/api/auth", dependencies.authHandler)
+  expressApp.use(
+    "/api/auth",
+    (
+      request: express.Request,
+      _response: express.Response,
+      next: express.NextFunction
+    ) => {
+      // The socket peer is authoritative until a specific trusted proxy is configured.
+      request.headers["x-auth-client-ip"] =
+        request.socket.remoteAddress ?? "127.0.0.1"
+      next()
+    },
+    dependencies.authHandler
+  )
   expressApp.use(express.json())
 
   return app

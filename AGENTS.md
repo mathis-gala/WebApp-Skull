@@ -6,7 +6,7 @@
 2. Inspecter `git status --short` et préserver les changements existants.
 3. Rechercher les symboles, contrats et consommateurs avant de créer une
    nouvelle abstraction.
-4. Vérifier les règles dans `docs/architecture.md` et les éléments existants
+4. Vérifier les règles dans `docs/ARCHITECTURE.md` et les éléments existants
    dans `docs/REUSE.md`.
 
 ## Frontières
@@ -30,7 +30,7 @@ jour dans le même changement tous les documents dont les faits ont évolué :
 
 - `CONTEXT.md` pour l'état ou les décisions ouvertes ;
 - `PRODUCT.md` pour une capacité ou règle utilisateur ;
-- `architecture.md` pour une frontière ou un flux ;
+- `ARCHITECTURE.md` pour une frontière ou un flux ;
 - `DESIGN.md` pour une convention d'interface ;
 - `REUSE.md` pour un élément partagé ;
 - `DEVELOPMENT.md` pour une commande ou procédure.
