@@ -1,0 +1,22 @@
+{
+  "name": "@workspace/contracts",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint",
+    "format": "prettier --write \"**/*.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.2"
+  },
+  "devDependencies": {
+    "@tanstack/eslint-config": "0.3.2",
+    "eslint": "9.36.0",
+    "typescript": "5.9.3"
+  },
+  "exports": {
+    "./common": "./src/common.ts"
+  }
+}
