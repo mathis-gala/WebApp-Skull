@@ -7,6 +7,7 @@ import {
   useRouter,
 } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
+import { projectConfig } from "@workspace/config/project"
 import { Button } from "@workspace/ui/components/button"
 import { Separator } from "@workspace/ui/components/separator"
 import { Toaster } from "@workspace/ui/components/sonner"
@@ -34,11 +35,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "WebApp Skull",
+        title: projectConfig.name,
       },
       {
         name: "description",
-        content: "Secure web application.",
+        content: projectConfig.description,
       },
     ],
     links: [
@@ -97,7 +98,7 @@ function AppHeader() {
           aria-label="Primary navigation"
         >
           <Button variant="ghost" asChild>
-            <Link to="/">WebApp Skull</Link>
+            <Link to="/">{projectConfig.name}</Link>
           </Button>
         </nav>
         {currentUser.data ? (
