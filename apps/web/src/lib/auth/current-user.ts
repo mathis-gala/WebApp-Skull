@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
-import { httpStatus } from "@workspace/contracts/common"
+import { httpStatus } from "@/lib/api/http-status"
 import type { QueryClient } from "@tanstack/react-query"
 
 import { apiClient } from "../api/client"

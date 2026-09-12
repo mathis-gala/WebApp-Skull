@@ -2,12 +2,11 @@
 
 ## Configuration et contrats transverses
 
-- `packages/config/src/project.ts` : identité du produit et valeurs ajustables
-  lors du clonage. Réutiliser cette configuration avant d'écrire un nom, une
-  limite d'authentification ou une taille de pool dans une application.
-- `packages/contracts/src/common.ts` : enveloppe d'erreur et statuts HTTP
-  partagés. Utiliser les noms de statuts dans la logique applicative au lieu de
-  comparer des codes numériques bruts.
+- `packages/config/src/project.js` : identité publique du produit (nom et
+  description), commune au web et à l'API. Les réglages techniques restent dans
+  le module qui les possède.
+- `packages/contracts/src/common.ts` : schéma de l'enveloppe d'erreur échangée
+  entre le web et l'API.
 
 ## Interface
 
@@ -26,6 +25,9 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
   cookies de session.
 - `apps/web/src/lib/query/query-client.ts` : configuration TanStack Query.
 - `apps/web/src/lib/api/config.ts` : URL publique de l'API.
+- `apps/web/src/lib/api/http-status.ts` : statuts nommés utilisés par le client.
+- `apps/web/src/features/auth/schemas/auth-form.config.ts` : contraintes de
+  saisie des formulaires d'authentification ; elles ne configurent pas Better Auth.
 
 ## Serveur
 
@@ -35,6 +37,8 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `apps/api/src/infrastructure/http/http-error.filter.ts` : enveloppe d'erreur
   des controllers Nest ; ne pas l'appliquer aux routes Better Auth.
 - `packages/database/src/client.ts` : création et fermeture du client Drizzle.
+- `packages/database/src/config.ts` : réglages du pool PostgreSQL.
+- `apps/api/src/openapi/config.ts` : chemin de documentation et version de l'API.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa
 source et sa règle d'usage.

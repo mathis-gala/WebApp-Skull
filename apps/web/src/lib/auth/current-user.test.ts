@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query"
-import { httpStatus } from "@workspace/contracts/common"
+import { httpStatus } from "@/lib/api/http-status"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   AuthenticationRequiredError,

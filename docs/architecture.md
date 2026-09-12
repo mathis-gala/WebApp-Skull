@@ -42,8 +42,17 @@ métier ou un port concret ne le justifie pas.
 - Persistance Drizzle : `packages/database`.
 - Primitive visuelle partagée : `packages/ui`.
 
+Les constantes restent auprès de leur propriétaire : contraintes de formulaire
+dans la feature web, réglages PostgreSQL dans `packages/database`, configuration
+OpenAPI dans l'API. `packages/config` ne partage à l'exécution que l'identité
+publique du produit ; `packages/contracts` décrit les données échangées, pas les
+réglages d'infrastructure. Le nom du cookie documenté appartient à l'intégration
+Better Auth et ne constitue pas un réglage public du projet.
+
 Les imports serveur utilisent NodeNext et des extensions `.js` explicites dans
 le TypeScript. Le web utilise le mode de résolution Bundler.
+L'identité publique est un module JavaScript avec déclaration TypeScript, lisible
+directement par Node sans compilation ni chargement TypeScript à l'exécution.
 
 Le web lit l'URL publique uniquement depuis `apps/web/src/lib/api/config.ts`.
 Le client OpenAPI envoie les cookies avec chaque requête. L'accueil désactive

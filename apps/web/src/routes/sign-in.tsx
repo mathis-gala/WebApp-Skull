@@ -1,6 +1,5 @@
 import { useForm } from "@tanstack/react-form"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
-import { authFormConfig } from "@/features/auth/schemas/auth-form.config"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -27,6 +26,7 @@ import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { z } from "zod"
 
+import { authFormConfig } from "@/features/auth/schemas/auth-form.config"
 import { authClient } from "@/lib/auth/auth-client"
 import { clearPrivateCache } from "@/lib/auth/current-user"
 
