@@ -1,5 +1,14 @@
 # Réutilisation
 
+## Configuration et contrats transverses
+
+- `packages/config/src/project.ts` : identité du produit et valeurs ajustables
+  lors du clonage. Réutiliser cette configuration avant d'écrire un nom, une
+  limite d'authentification ou une taille de pool dans une application.
+- `packages/contracts/src/common.ts` : enveloppe d'erreur et statuts HTTP
+  partagés. Utiliser les noms de statuts dans la logique applicative au lieu de
+  comparer des codes numériques bruts.
+
 ## Interface
 
 Les primitives réutilisables se trouvent dans

@@ -1,4 +1,5 @@
 import { QueryClient } from "@tanstack/react-query"
+import { httpStatus } from "@workspace/contracts/common"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   AuthenticationRequiredError,
@@ -28,7 +29,7 @@ describe("identity transitions", () => {
       emailVerified: true,
     })
     getCurrentUser.mockResolvedValue({
-      response: new Response(null, { status: 401 }),
+      response: new Response(null, { status: httpStatus.unauthorized }),
     })
 
     await expect(

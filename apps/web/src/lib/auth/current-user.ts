@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query"
+import { httpStatus } from "@workspace/contracts/common"
 import type { QueryClient } from "@tanstack/react-query"
 
 import { apiClient } from "../api/client"
@@ -10,7 +11,10 @@ export const currentUserQueryOptions = queryOptions({
   queryFn: async ({ signal }) => {
     const { data, response } = await apiClient.GET("/api/me", { signal })
 
-    if (response.status === 401 || response.status === 403) {
+    if (
+      response.status === httpStatus.unauthorized ||
+      response.status === httpStatus.forbidden
+    ) {
       throw new AuthenticationRequiredError("Authentication required")
     }
 
