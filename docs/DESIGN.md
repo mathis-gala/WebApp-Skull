@@ -8,6 +8,10 @@ L'interface utilise les tokens Tailwind définis dans
 - Maintenir le parcours au clavier et le lien d'évitement vers le contenu.
 - Garder les pages utilisables sur écran étroit avant d'ajouter des variantes.
 - Ne pas exposer de vocabulaire d'infrastructure dans les écrans produit.
+- Rediriger une identité sans session admissible vers la connexion avant de
+  rendre le contenu de l'accueil.
+- Afficher une erreur de déconnexion sans retirer prématurément l'identité ;
+  après succès, vider les données privées avant la navigation.
 
 Les nouveaux motifs réellement partagés rejoignent `packages/ui`. Un composant
 propre à une fonctionnalité reste près de cette fonctionnalité.

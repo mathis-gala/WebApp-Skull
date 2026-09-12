@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm api:check && pnpm build",
+    "api:check": "node scripts/api-contract.mjs check",
+    "api:generate": "node scripts/api-contract.mjs generate",
     "db:generate": "turbo db:generate --filter=@workspace/database",
     "db:migrate": "turbo db:migrate --filter=@workspace/database",
     "db:studio": "turbo db:studio --filter=@workspace/database",

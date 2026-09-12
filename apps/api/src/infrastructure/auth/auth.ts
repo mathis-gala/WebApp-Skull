@@ -1,5 +1,6 @@
 import { schema } from "@workspace/database"
-import { projectConfig } from "@workspace/config/project"
+import { authPasswordConstraints } from "@workspace/contracts/auth/constraints"
+import projectConfig from "@workspace/config/project" with { type: "json" }
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
@@ -20,6 +21,7 @@ export function createAuth(db: Database, env: ApiEnv) {
     }),
     emailAndPassword: {
       enabled: true,
+      minPasswordLength: authPasswordConstraints.minLength,
     },
   })
 }

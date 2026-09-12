@@ -6,13 +6,20 @@ import {
   createRootRouteWithContext,
   useRouter,
 } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/react-query"
+import projectConfig from "@workspace/config/project" with { type: "json" }
 import { Button } from "@workspace/ui/components/button"
 import { Separator } from "@workspace/ui/components/separator"
 import { Toaster } from "@workspace/ui/components/sonner"
 import { CircleUserRoundIcon, LogOutIcon } from "lucide-react"
 import { ThemeProvider } from "next-themes"
+import { useState } from "react"
 
 import { authClient } from "@/lib/auth/auth-client"
+import {
+  clearPrivateCache,
+  currentUserQueryOptions,
+} from "@/lib/auth/current-user"
 import type { RouterContext } from "@/router"
 
 import appCss from "@workspace/ui/globals.css?url"
@@ -28,11 +35,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "WebApp Skull",
+        title: projectConfig.name,
       },
       {
         name: "description",
-        content: "Secure web application.",
+        content: projectConfig.description,
       },
     ],
     links: [
@@ -65,12 +72,21 @@ function RootLayout() {
 }
 
 function AppHeader() {
-  const session = authClient.useSession()
   const router = useRouter()
+  const currentUser = useQuery(currentUserQueryOptions)
+  const [signOutError, setSignOutError] = useState<string>()
 
   const handleSignOut = async () => {
-    await authClient.signOut()
-    await router.navigate({ to: "/" })
+    setSignOutError(undefined)
+    const result = await authClient.signOut()
+
+    if (result.error) {
+      setSignOutError(result.error.message ?? "Unable to sign out")
+      return
+    }
+
+    await clearPrivateCache(router.options.context.queryClient)
+    await router.navigate({ to: "/sign-in" })
     await router.invalidate()
   }
 
@@ -82,13 +98,18 @@ function AppHeader() {
           aria-label="Primary navigation"
         >
           <Button variant="ghost" asChild>
-            <Link to="/">WebApp Skull</Link>
+            <Link to="/">{projectConfig.name}</Link>
           </Button>
         </nav>
-        {session.data ? (
+        {currentUser.data ? (
           <div className="flex items-center gap-2">
+            {signOutError && (
+              <span role="alert" className="text-sm text-destructive">
+                {signOutError}
+              </span>
+            )}
             <span className="hidden text-sm text-muted-foreground sm:inline">
-              {session.data.user.email}
+              {currentUser.data.email}
             </span>
             <Button variant="outline" onClick={handleSignOut}>
               <LogOutIcon data-icon="inline-start" />

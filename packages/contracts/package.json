@@ -17,6 +17,8 @@
     "typescript": "5.9.3"
   },
   "exports": {
-    "./common": "./src/common.ts"
+    "./auth/constraints": "./src/auth.constraints.ts",
+    "./common": "./src/common.ts",
+    "./identity": "./src/identity.ts"
   }
 }

@@ -1,6 +1,5 @@
 import { useForm } from "@tanstack/react-form"
 import { createFileRoute, useRouter } from "@tanstack/react-router"
-import { authFormConfig } from "@/features/auth/schemas/auth-form.config"
 import { Button } from "@workspace/ui/components/button"
 import {
   Card,
@@ -27,7 +26,9 @@ import { useState } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { z } from "zod"
 
+import { authFormConstraints } from "@/features/auth/schemas/auth-form.constraints"
 import { authClient } from "@/lib/auth/auth-client"
+import { clearPrivateCache } from "@/lib/auth/current-user"
 
 const searchSchema = z.object({
   redirect: z.string().optional().catch(undefined),
@@ -38,8 +39,8 @@ const signInSchema = z.object({
   password: z
     .string()
     .min(
-      authFormConfig.passwordMinLength,
-      `Password must contain at least ${authFormConfig.passwordMinLength} characters`
+      authFormConstraints.passwordMinLength,
+      `Password must contain at least ${authFormConstraints.passwordMinLength} characters`
     ),
 })
 
@@ -48,8 +49,8 @@ const signUpSchema = signInSchema.extend({
     .string()
     .trim()
     .min(
-      authFormConfig.userNameMinLength,
-      `Name must contain at least ${authFormConfig.userNameMinLength} characters`
+      authFormConstraints.userNameMinLength,
+      `Name must contain at least ${authFormConstraints.userNameMinLength} characters`
     ),
 })
 
@@ -97,6 +98,7 @@ function SignInForm() {
     },
     onSubmit: async ({ value }) => {
       setServerError(undefined)
+      await clearPrivateCache(router.options.context.queryClient)
       const result = await authClient.signIn.email(value)
 
       if (result.error) {
@@ -104,6 +106,7 @@ function SignInForm() {
         return
       }
 
+      await clearPrivateCache(router.options.context.queryClient)
       await router.navigate({ href: getSafeRedirect(search.redirect) })
       await router.invalidate()
     },
@@ -206,6 +209,7 @@ function SignUpForm() {
     },
     onSubmit: async ({ value }) => {
       setServerError(undefined)
+      await clearPrivateCache(router.options.context.queryClient)
       const result = await authClient.signUp.email(value)
 
       if (result.error) {
@@ -213,6 +217,7 @@ function SignUpForm() {
         return
       }
 
+      await clearPrivateCache(router.options.context.queryClient)
       await router.navigate({ to: "/" })
       await router.invalidate()
     },
