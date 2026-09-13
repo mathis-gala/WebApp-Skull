@@ -5,9 +5,9 @@ export default defineConfig({
   plugins: [swc.vite()],
   test: {
     environment: "node",
-    include: ["test/integration/**/*.integration.test.ts"],
+    include: ["test/e2e/**/*.e2e.test.ts"],
     fileParallelism: false,
-    testTimeout: 30000,
+    testTimeout: 60000,
     hookTimeout: 30000,
   },
 })

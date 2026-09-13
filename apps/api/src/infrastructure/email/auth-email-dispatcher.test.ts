@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { AuthEmailDispatcher } from "../src/infrastructure/email/auth-email-dispatcher.js"
-import type { EmailEvent } from "../src/infrastructure/email/auth-email-dispatcher.js"
+import { AuthEmailDispatcher } from "./auth-email-dispatcher.js"
+import type { EmailEvent } from "./auth-email-dispatcher.js"
 
 const input = {
   kind: "verification",
@@ -15,11 +15,10 @@ describe("tracked auth email dispatch", () => {
     const events: Array<EmailEvent> = []
     const dispatcher = new AuthEmailDispatcher(
       {
-        send: async () => {
-          throw new Error(
-            "private-password smtp.example.test test@example.test"
-          )
-        },
+        send: () =>
+          Promise.reject(
+            new Error("private-password smtp.example.test test@example.test")
+          ),
       },
       (event) => {
         events.push(event)

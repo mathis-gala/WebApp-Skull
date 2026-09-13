@@ -109,6 +109,12 @@ pnpm test:integration
 pnpm test:e2e
 ```
 
+Les tests rapides sont colocalisés avec leur source sous `apps/api/src` et
+portent le suffixe `.test.ts`. La configuration unitaire ne charge que ces
+fichiers. Les tests avec services réels vivent sous `test/integration` avec le
+suffixe `.integration.test.ts` ; les parcours navigateur vivent sous `test/e2e`
+avec le suffixe `.e2e.test.ts`. Chaque famille possède sa configuration Vitest.
+
 Le harness crée un projet Compose UUID distinct, PostgreSQL en tmpfs et Mailpit
 sans relais, avec ports loopback dynamiques. Il ne lit pas `.env`, n’utilise pas
 les volumes dev et n’accepte pas une URL de base arbitraire. Les migrations sont
@@ -118,6 +124,12 @@ et relance le seed deux fois. `test:integration` couvre DB, sessions, email et
 sécurité API ; `test:e2e` exerce le parcours mobile avec captures locales sous
 `output/playwright`. Le serveur Vite utilise `envDir: false` et des ports réservés
 au test. Docker doit fonctionner et pouvoir télécharger les images versionnées.
+
+Les parcours d’intégration auth restent dans une suite cohésive : vérification,
+sessions et reset réutilisent volontairement l’identité créée au début du
+parcours. La configuration désactive le parallélisme entre fichiers ; toute
+nouvelle feature indépendante doit obtenir son propre fichier et ses propres
+données, sans dépendre de l’ordre des fichiers.
 
 ## Logs et santé
 

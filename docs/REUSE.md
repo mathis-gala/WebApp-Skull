@@ -63,6 +63,8 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `apps/api/src/seeds/auth/store.ts` : adaptateur de
   persistance des fixtures auth ; il centralise la détection des IDs réservés et
   les remplacements/nettoyages transactionnels.
+- `apps/api/test/support/auth.harness.ts` : application, base possédée, Mailpit
+  et helpers HTTP partagés uniquement par les suites d’intégration et E2E auth.
 - `apps/api/src/openapi/config.ts` : chemin de documentation et version de l'API.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa

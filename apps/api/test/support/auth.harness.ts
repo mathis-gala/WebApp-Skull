@@ -4,10 +4,10 @@ import { createDatabase } from "@workspace/database"
 import { createSmtpSender, getEmailConfig } from "@workspace/email"
 import { toNodeHandler } from "better-auth/node"
 import request from "supertest"
-import { createApiApp } from "../src/app.js"
-import { getEnv } from "../src/config/env.js"
-import { createAuth } from "../src/infrastructure/auth/auth.js"
-import { AuthEmailDispatcher } from "../src/infrastructure/email/auth-email-dispatcher.js"
+import { createApiApp } from "../../src/app.js"
+import { getEnv } from "../../src/config/env.js"
+import { createAuth } from "../../src/infrastructure/auth/auth.js"
+import { AuthEmailDispatcher } from "../../src/infrastructure/email/auth-email-dispatcher.js"
 import type { INestApplication } from "@nestjs/common"
 
 const databaseUrl = process.env.AUTH_TEST_DATABASE_URL
@@ -15,7 +15,9 @@ if (
   !databaseUrl ||
   !process.env.AUTH_TEST_OWNED?.startsWith("skull-code004-test-")
 )
-  throw new Error("Use pnpm test:integration: isolated owned services required")
+  throw new Error(
+    "Use pnpm test:integration or pnpm test:e2e: isolated owned services required"
+  )
 const target = new URL(databaseUrl)
 if (target.hostname !== "127.0.0.1" || target.pathname !== "/skull_auth_test")
   throw new Error("Refusing unverified test database")

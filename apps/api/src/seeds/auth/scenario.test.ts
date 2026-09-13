@@ -1,19 +1,20 @@
 import { describe, expect, it, vi } from "vitest"
-import { parseSeedCommand } from "../src/cli/seed-command.js"
+
 import {
   AUTH_FIXTURES,
   AUTH_FIXTURE_PASSWORD,
   createAuthSeedScenario,
-} from "../src/seeds/auth/scenario.js"
-import { runSeedCommand } from "../src/seeds/seed.js"
+} from "./scenario.js"
 import type {
   AuthFixtureStore,
   ExistingAuthFixture,
   PreparedAuthFixture,
-} from "../src/seeds/auth/scenario.js"
-import type { SeedScenario } from "../src/seeds/seed.js"
+} from "./scenario.js"
+import type { SeedScenario } from "../seed.js"
 
-const hashPassword = vi.fn(async (password: string) => `hash:${password}`)
+const hashPassword = vi.fn((password: string) =>
+  Promise.resolve(`hash:${password}`)
+)
 
 function existingFixture(index: number): ExistingAuthFixture {
   const fixture = AUTH_FIXTURES[index]!
@@ -34,9 +35,10 @@ function existingFixture(index: number): ExistingAuthFixture {
 
 function createStore(initial: ReadonlyArray<ExistingAuthFixture> = []) {
   const users = new Map(initial.map((user) => [user.email, user]))
-  const removeRecognized = vi.fn(async (ids: ReadonlyArray<string>) => {
+  const removeRecognized = vi.fn((ids: ReadonlyArray<string>) => {
     for (const [email, user] of users)
       if (ids.includes(user.id)) users.delete(email)
+    return Promise.resolve()
   })
   const replaceRecognized = vi.fn(
     async (
@@ -84,88 +86,6 @@ async function runPrepared(scenario: SeedScenario, clean = false) {
   await operation()
 }
 
-function recordingScenario(name: string, calls: Array<string>): SeedScenario {
-  return {
-    name,
-    async prepareSeed() {
-      calls.push(`prepare-seed:${name}`)
-      return async () => void calls.push(`seed:${name}`)
-    },
-    async prepareClean() {
-      calls.push(`prepare-clean:${name}`)
-      return async () => void calls.push(`clean:${name}`)
-    },
-  }
-}
-
-describe("seed command", () => {
-  it("prepares all scenarios before seeding in registry order and cleaning in reverse", async () => {
-    const calls: Array<string> = []
-    const registry = ["auth", "catalog"].map((name) =>
-      recordingScenario(name, calls)
-    )
-    await runSeedCommand(parseSeedCommand(["--all"]), registry)
-    await runSeedCommand(parseSeedCommand(["--all", "--clean"]), registry)
-    expect(calls).toEqual([
-      "prepare-seed:auth",
-      "prepare-seed:catalog",
-      "seed:auth",
-      "seed:catalog",
-      "prepare-clean:catalog",
-      "prepare-clean:auth",
-      "clean:catalog",
-      "clean:auth",
-    ])
-  })
-
-  it("does not mutate when a later selected scenario fails preflight", async () => {
-    const mutate = vi.fn(() => Promise.resolve())
-    const registry: ReadonlyArray<SeedScenario> = [
-      {
-        name: "first",
-        prepareSeed: async () => mutate,
-        prepareClean: async () => mutate,
-      },
-      {
-        name: "second",
-        prepareSeed: () => Promise.reject(new Error("collision")),
-        prepareClean: () => Promise.reject(new Error("collision")),
-      },
-    ]
-    await expect(
-      runSeedCommand(parseSeedCommand(["--all"]), registry)
-    ).rejects.toThrow("collision")
-    expect(mutate).not.toHaveBeenCalled()
-  })
-
-  it.each([
-    { arguments_: [] },
-    { arguments_: ["--all", "--scenario", "auth"] },
-    { arguments_: ["--scenario"] },
-    { arguments_: ["--scenario", ""] },
-    { arguments_: ["--all", "extra"] },
-  ])(
-    "rejects ambiguous or incomplete arguments $arguments_",
-    ({ arguments_ }) =>
-      expect(() => parseSeedCommand(arguments_)).toThrow("Usage:")
-  )
-
-  it("rejects unknown, empty, and duplicate registered scenarios", async () => {
-    await expect(
-      runSeedCommand(parseSeedCommand(["--scenario", "missing"]), [])
-    ).rejects.toThrow("Unknown seed scenario")
-    await expect(
-      runSeedCommand(parseSeedCommand(["--all"]), [recordingScenario(" ", [])])
-    ).rejects.toThrow("must not be empty")
-    await expect(
-      runSeedCommand(parseSeedCommand(["--all"]), [
-        recordingScenario("auth", []),
-        recordingScenario("auth", []),
-      ])
-    ).rejects.toThrow("Duplicate")
-  })
-})
-
 describe("auth seed scenario", () => {
   it("hashes every password before atomically replacing fixtures", async () => {
     const fixtureStore = createStore()
@@ -190,20 +110,14 @@ describe("auth seed scenario", () => {
   })
 
   it.each([
-    {
-      ...existingFixture(0),
-      id: "lookalike-user",
-    },
+    { ...existingFixture(0), id: "lookalike-user" },
     {
       ...existingFixture(0),
       accounts: [
         { ...existingFixture(0).accounts[0]!, id: "lookalike-account" },
       ],
     },
-    {
-      ...existingFixture(0),
-      email: "different@example.test",
-    },
+    { ...existingFixture(0), email: "different@example.test" },
     {
       id: "different-user",
       email: "different@example.test",

@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [swc.vite()],
   test: {
     environment: "node",
+    include: ["src/**/*.test.ts"],
   },
 })

@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest"
 
-import { createShutdown } from "../src/infrastructure/lifecycle/shutdown.js"
-import type { ShutdownEvent } from "../src/infrastructure/lifecycle/shutdown.js"
+import { createShutdown } from "./shutdown.js"
+import type { ShutdownEvent } from "./shutdown.js"
 
 it("closes every resource in order once when shutdown is requested twice", async () => {
   const order: Array<string> = []
@@ -10,21 +10,23 @@ it("closes every resource in order once when shutdown is requested twice", async
     [
       {
         name: "server",
-        close: vi.fn(async () => {
+        close: vi.fn(() => {
           order.push("server")
+          return Promise.resolve()
         }),
       },
       {
         name: "email",
-        close: vi.fn(async () => {
+        close: vi.fn(() => {
           order.push("email")
-          throw new Error("private provider detail")
+          return Promise.reject(new Error("private provider detail"))
         }),
       },
       {
         name: "database",
-        close: vi.fn(async () => {
+        close: vi.fn(() => {
           order.push("database")
+          return Promise.resolve()
         }),
       },
     ],
