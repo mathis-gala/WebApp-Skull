@@ -15,7 +15,7 @@ Les migrations et fixtures passent par une garde de cible locale. Deux comptes
 auth fictifs peuvent être créés de façon idempotente. L’API journalise les
 requêtes avec Pino, expose une readiness PostgreSQL bornée et ferme ses
 ressources à l’arrêt. La CI rejoue contrôles rapides, intégration et E2E dans
-des environnements distincts.
+des environnements distincts et recherche les secrets dans tout l’historique Git.
 
 Le domaine produit au-delà de l’authentification reste à définir. Ne pas ajouter
 une fonctionnalité de démonstration pour combler ce vide.

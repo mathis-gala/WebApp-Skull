@@ -96,6 +96,56 @@ for (const match of workflow.matchAll(/uses:\s*([^\s]+)@([^\s#]+)/g)) {
   }
 }
 
+const workflowWithoutComments = workflow
+  .replace(/^\s*#.*$/gm, "")
+  .replace(/\s+#.*$/gm, "")
+const gitleaksJob = workflowWithoutComments.match(
+  /(?:^|\n)  gitleaks:\n([\s\S]*?)(?=\n  [a-zA-Z0-9_-]+:\n|$)/
+)?.[1]
+if (!gitleaksJob) {
+  failures.push("CI must keep an independent gitleaks job")
+} else {
+  const gitleaksRequirements = [
+    [
+      /fetch-depth:\s*0(?:\s|$)/,
+      "Gitleaks checkout must fetch the complete Git history",
+    ],
+    [
+      /GITLEAKS_VERSION:\s*["']?8\.30\.1["']?(?:\s|$)/,
+      "Gitleaks must remain pinned to version 8.30.1",
+    ],
+    [
+      /GITLEAKS_SHA256:\s*["']?551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb["']?(?:\s|$)/,
+      "Gitleaks archive checksum must remain pinned",
+    ],
+    [
+      /https:\/\/github\.com\/gitleaks\/gitleaks\/releases\/download\/v\$\{GITLEAKS_VERSION\}\/gitleaks_\$\{GITLEAKS_VERSION\}_linux_x64\.tar\.gz/,
+      "Gitleaks Linux x64 archive must come from its official versioned release",
+    ],
+    [
+      /GITLEAKS_SHA256[\s\S]{0,200}\|\s*sha256sum\s+(?:--check\s+--strict|--strict\s+--check)/,
+      "Gitleaks archive checksum must be verified before extraction",
+    ],
+    [
+      /gitleaks["']?\s+git\s+(?=[^\n]*--redact)(?=[^\n]*--verbose)[^\n]*\s\.\s*$/m,
+      "Gitleaks must scan repository history",
+    ],
+  ]
+  for (const [pattern, message] of gitleaksRequirements) {
+    if (!pattern.test(gitleaksJob)) failures.push(message)
+  }
+
+  const checksumIndex = gitleaksJob.search(/sha256sum\s+/)
+  const extractionIndex = gitleaksJob.search(/tar\s+--extract/)
+  if (
+    checksumIndex < 0 ||
+    extractionIndex < 0 ||
+    checksumIndex > extractionIndex
+  ) {
+    failures.push("Gitleaks archive must be verified before extraction")
+  }
+}
+
 if (failures.length > 0) {
   console.error(failures.join("\n"))
   process.exitCode = 1

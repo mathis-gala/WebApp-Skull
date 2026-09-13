@@ -24,6 +24,7 @@ Application web TypeScript avec authentification par email et mot de passe.
 | Docker Compose                        | Services locaux                               |
 | Pino et nestjs-pino                   | Logs HTTP structurés et nettoyés              |
 | GitHub Actions                        | Vérification Node 24 isolée                   |
+| Gitleaks                              | Détection de secrets dans l’historique Git    |
 
 ## Démarrage
 

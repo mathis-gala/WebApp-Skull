@@ -118,9 +118,25 @@ token, URL d’action ou message SMTP. `/health/live` ne contacte aucun service 
 ## CI
 
 `.github/workflows/ci.yml` utilise Node 24.21.0 et pnpm 12.4.1. Les actions sont
-épinglées à des commits et les images à des versions. Trois jobs sans compte
-externe exécutent respectivement `pnpm check`, l'intégration et l'E2E ; ces deux
-derniers créent leurs propres services éphémères, jamais le Compose dev.
+épinglées à des commits et les images à des versions. Quatre jobs sans compte
+externe exécutent respectivement la détection de secrets, `pnpm check`,
+l'intégration et l'E2E ; ces deux derniers créent leurs propres services
+éphémères, jamais le Compose dev.
+
+Le job Gitleaks télécharge le binaire MIT 8.30.1 depuis sa release officielle,
+vérifie son archive Linux x64 par SHA-256 et analyse tout l'historique Git. La
+même analyse est reproductible localement sur Linux x64 :
+
+```bash
+gitleaks_dir="$(mktemp -d)"
+trap 'rm -rf "$gitleaks_dir"' EXIT
+curl --fail --silent --show-error --location \
+  --output "$gitleaks_dir/gitleaks.tar.gz" \
+  https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $gitleaks_dir/gitleaks.tar.gz" | sha256sum --check --strict
+tar --extract --gzip --file "$gitleaks_dir/gitleaks.tar.gz" --directory "$gitleaks_dir" gitleaks
+"$gitleaks_dir/gitleaks" git --redact --verbose .
+```
 
 ## Traductions
 
