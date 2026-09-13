@@ -1,4 +1,4 @@
-export function getSafeRedirect(value: string | undefined) {
+export function getSafeInternalRedirect(value: string | undefined) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return "/"
   const ambiguous =
     value.includes("\\") ||

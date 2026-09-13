@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   AuthenticationRequiredError,
   clearPrivateCache,
+  currentUserQueryOptions,
   loadCurrentUserForProtectedRoute,
 } from "./current-user"
 
@@ -22,7 +23,7 @@ afterEach(() => {
 describe("identity transitions", () => {
   it("checks a fresh cached identity with the API before entering a protected route", async () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(["auth", "current-user"], {
+    queryClient.setQueryData(currentUserQueryOptions.queryKey, {
       id: "revoked-user",
       name: "Revoked user",
       email: "revoked@example.test",
@@ -39,20 +40,40 @@ describe("identity transitions", () => {
     expect(getCurrentUser).toHaveBeenCalledOnce()
   })
 
-  it("cancels requests and removes private data before another identity can be shown", async () => {
+  it("cancels private requests and removes their data while preserving public queries", async () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(["auth", "current-user"], {
+    queryClient.setQueryData(currentUserQueryOptions.queryKey, {
       id: "user-a",
+      name: "User A",
       email: "a@example.test",
+      emailVerified: true,
     })
     queryClient.setQueryData(["private", "dashboard"], {
       ownerId: "user-a",
     })
+    queryClient.setQueryData(["public", "project"], { name: "Public project" })
+    const publicAborted = vi.fn()
+    let finishPublicRequest: (value: string) => void = () => {
+      throw new Error("Public request not started")
+    }
+    const publicRequest = queryClient.fetchQuery({
+      queryKey: ["public", "in-flight"],
+      queryFn: ({ signal }) =>
+        new Promise<string>((resolve) => {
+          finishPublicRequest = resolve
+          signal.addEventListener("abort", publicAborted)
+        }),
+    })
+    const publicOutcome = publicRequest.catch(() => undefined)
+    const privateAborted = vi.fn()
     const pendingRequest = queryClient.fetchQuery({
       queryKey: ["private", "in-flight"],
       queryFn: ({ signal }) =>
         new Promise((resolve) => {
-          signal.addEventListener("abort", () => resolve("cancelled"))
+          signal.addEventListener("abort", () => {
+            privateAborted()
+            resolve("cancelled")
+          })
         }),
     })
     const pendingOutcome = pendingRequest.catch(() => undefined)
@@ -60,6 +81,20 @@ describe("identity transitions", () => {
     await clearPrivateCache(queryClient)
     await pendingOutcome
 
-    expect(queryClient.getQueryCache().getAll()).toEqual([])
+    expect(privateAborted).toHaveBeenCalledOnce()
+    expect(publicAborted).not.toHaveBeenCalled()
+    expect(
+      queryClient.getQueryData(currentUserQueryOptions.queryKey)
+    ).toBeUndefined()
+    expect(queryClient.getQueryData(["private", "dashboard"])).toBeUndefined()
+    expect(queryClient.getQueryState(["private", "in-flight"])).toBeUndefined()
+    expect(queryClient.getQueryData(["public", "project"])).toEqual({
+      name: "Public project",
+    })
+    finishPublicRequest("Public result")
+    await expect(publicOutcome).resolves.toBe("Public result")
+    expect(queryClient.getQueryData(["public", "in-flight"])).toBe(
+      "Public result"
+    )
   })
 })

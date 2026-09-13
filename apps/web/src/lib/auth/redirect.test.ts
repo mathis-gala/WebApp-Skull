@@ -1,5 +1,5 @@
 import { expect, it } from "vitest"
-import { getSafeRedirect } from "./redirect"
+import { getSafeInternalRedirect } from "./redirect"
 
 it.each([
   "https://evil.test",
@@ -9,10 +9,10 @@ it.each([
   "/%255cevil.test",
   "/\nevil.test",
 ])("rejects ambiguous or external return URL %s", (value) => {
-  expect(getSafeRedirect(value)).toBe("/")
+  expect(getSafeInternalRedirect(value)).toBe("/")
 })
 it("preserves normalized internal navigation", () => {
-  expect(getSafeRedirect("/compte/../?section=profil#nom")).toBe(
+  expect(getSafeInternalRedirect("/compte/../?section=profil#nom")).toBe(
     "/?section=profil#nom"
   )
 })

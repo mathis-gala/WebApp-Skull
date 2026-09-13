@@ -65,8 +65,9 @@ Le client OpenAPI envoie les cookies avec chaque requête. L'accueil désactive
 son chargement SSR et redirige vers la connexion lorsque `/api/me` répond 401
 ou 403. L'entrée sur cette route force une nouvelle vérification de `/api/me`,
 même si l'identité en cache est encore fraîche. Toute transition d'identité
-vide le cache TanStack Query afin qu'aucune donnée privée d'un utilisateur
-précédent ne reste visible.
+annule puis retire les queries préfixées `private` (identité incluse), afin
+qu’aucune donnée privée d’un utilisateur précédent ne reste visible. Les queries
+publiques conservent leurs données et leurs requêtes en cours.
 
 ## Santé
 

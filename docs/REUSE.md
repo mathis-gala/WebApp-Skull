@@ -24,6 +24,11 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `apps/web/src/lib/api/client.ts` : client OpenAPI typé, configuré avec les
   cookies de session.
 - `apps/web/src/lib/query/query-client.ts` : configuration TanStack Query.
+- `apps/web/src/lib/query/query-keys.ts` : préfixe `privateQueryKeyPrefix` pour
+  toutes les queries dépendant de la session ou contenant des données privées.
+  Construire leurs clés avec `[...privateQueryKeyPrefix, feature, ...identifiants]`.
+  Les transitions d’identité annulent puis retirent seulement ce préfixe ;
+  les queries publiques, y compris celles en cours, sont conservées.
 - `apps/web/src/lib/api/config.ts` : URL publique de l'API.
 - `apps/web/src/lib/api/http-status.ts` : statuts nommés utilisés par le client.
 - `apps/web/src/features/auth/schemas/auth-form.constraints.ts` : contrainte du nom
@@ -68,5 +73,5 @@ source et sa règle d'usage.
   étapes d’authentification.
 - `apps/web/src/features/auth/hooks` : inscription, connexion, demandes email,
   reset et déconnexion ; ne pas importer une route depuis un hook.
-- `apps/web/src/lib/auth/redirect.ts` : validation restrictive d’un retour interne.
+- `apps/web/src/lib/auth/redirect.ts` : `getSafeInternalRedirect`, validation restrictive d’un retour interne.
 - `apps/web/src/lib/seo/private-head.ts` : métadonnées auth/privé sans indexation.
