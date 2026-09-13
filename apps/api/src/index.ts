@@ -10,9 +10,12 @@ import { createApiApp } from "./app.js"
 import { getEnv } from "./config/env.js"
 import { createAuth } from "./infrastructure/auth/auth.js"
 import { AuthEmailDispatcher } from "./infrastructure/email/auth-email-dispatcher.js"
+import { createShutdown } from "./infrastructure/lifecycle/shutdown.js"
+import { createApiLogger } from "./infrastructure/logging/logging.js"
 import { setupOpenApi } from "./openapi/document.js"
 
 const env = getEnv()
+const logger = createApiLogger(env.APP_ENV)
 const database = createDatabase(env.DATABASE_URL)
 const emailConfig = getEmailConfig(process.env)
 const sender =
@@ -20,9 +23,13 @@ const sender =
     ? new MemoryEmailSender()
     : createSmtpSender(emailConfig)
 const emails = new AuthEmailDispatcher(sender, (event) => {
-  console.log(JSON.stringify(event))
+  logger.info(event)
 })
-const auth = createAuth(database.db, env, emails)
+const auth = createAuth(database.db, env, emails, (level) => {
+  const method =
+    level === "error" ? "error" : level === "warn" ? "warn" : "info"
+  logger[method]({ event: "auth.provider", providerLevel: level })
+})
 const app = await createApiApp({
   authHandler: toNodeHandler(auth),
   getSession: async (headers) => {
@@ -44,19 +51,33 @@ const app = await createApiApp({
       },
     }
   },
+  databaseReady: database.ready,
   allowedOrigin: env.WEB_URL,
+  logger,
 })
 
 if (process.env.NODE_ENV !== "production") setupOpenApi(app)
 
 await app.listen(env.API_PORT)
-console.log(`API listening on http://localhost:${env.API_PORT}`)
+logger.info({ event: "api.started", port: env.API_PORT })
 
-const shutdown = async () => {
-  await app.close()
-  await emails.close()
-  await database.close()
+const shutdown = createShutdown(
+  [
+    { name: "server", close: () => app.close() },
+    { name: "email", close: () => emails.close() },
+    { name: "database", close: () => database.close() },
+  ],
+  (event) => {
+    if (event.event === "api.shutdown_failed") logger.error(event)
+    else logger.info(event)
+  }
+)
+
+const handleSignal = () => {
+  void shutdown().catch(() => {
+    process.exitCode = 1
+  })
 }
 
-process.once("SIGINT", shutdown)
-process.once("SIGTERM", shutdown)
+process.once("SIGINT", handleSignal)
+process.once("SIGTERM", handleSignal)

@@ -71,9 +71,48 @@ publiques conservent leurs données et leurs requêtes en cours.
 
 ## Santé
 
-La liveness indique que le processus répond. La readiness est présente mais ne
-sonde pas encore PostgreSQL ; cette vérification bornée sera ajoutée avec le
-lot d'observabilité.
+La liveness indique seulement que le processus répond. La readiness exécute
+`select 1` sur PostgreSQL et retourne 503 si la requête échoue ou dépasse deux
+secondes. Elle ne sonde pas le transport email et ne divulgue aucun détail de
+connexion.
+
+## Journaux et arrêt
+
+Un middleware Pino placé avant CORS et Better Auth crée l’identifiant de requête.
+Il le renvoie dans `x-request-id`, le lie aux logs Nest et le transmet au
+dispatcher email. Le log HTTP contient méthode, chemin sans query, statut et
+durée. Les headers, bodies, cookies, tokens, emails, IP, URLs d’action et messages
+fournisseur n’en font pas partie ; la redaction Pino forme une seconde barrière.
+Le développement utilise `pino-pretty`, tandis que staging et production restent
+en JSON.
+
+À SIGINT ou SIGTERM, le serveur cesse d’accepter des requêtes, le dispatcher
+attend les emails suivis au plus 15 secondes, puis la connexion PostgreSQL est
+fermée.
+
+## Migrations et fixtures
+
+Les commandes d’écriture vérifient `APP_ENV`, le protocole, l’hôte loopback et
+la concordance de la cible avec `POSTGRES_DB`, `POSTGRES_USER`,
+`POSTGRES_PASSWORD` et `POSTGRES_PORT` avant de charger le client PostgreSQL.
+Leurs valeurs par défaut restent celles de `.env.example`. Les tests exigent
+les identifiants dédiés et un identifiant d’environnement
+éphémère possédé ; le seed exige le mode fixture `enabled`. Aucun migrateur ou
+seed ne s’exécute au démarrage de l’API.
+
+Le registre initial contient deux comptes `example.test`. Le hachage passe par
+l’API publique `better-auth/crypto`. Le registre ordonné prépare tous les
+scénarios sélectionnés avant la première mutation, puis les exécute dans l’ordre
+déclaré ; le nettoyage utilise l’ordre inverse. Une relance reconnaît les IDs
+utilisateur et compte réservés ainsi que la signature Better Auth complète. Elle
+remplace ensuite les comptes et leurs hashes dans une seule transaction pour
+restaurer leurs valeurs. Une collision interrompt toute la sélection avant
+mutation. Le scénario auth reste indépendant de Drizzle ; l’adaptateur
+`seeds/auth/store.ts` possède les requêtes et transactions,
+et le CLI ne fait que composer ces dépendances après la garde de cible.
+Le nettoyage optionnel supprime seulement ces deux adresses, leurs dépendances
+auth et les jetons de réinitialisation dont la valeur référence leur identifiant,
+dans une transaction. Il reste explicite.
 
 ## Authentification et emails
 
@@ -94,6 +133,18 @@ Un crash peut perdre un envoi, sans retry automatique.
 `packages/core` possède `EmailSender` et `EmailMessage` ; `packages/email`
 implémente le rendu React Email et SMTP ; l’API compose les adaptateurs selon
 `APP_ENV`. Le web n’importe aucun de ces modules serveur.
+
+## Tests des applications
+
+Tous les tests restent sous le dossier `test` de leur application ou package.
+Les tests rapides suivent l’arborescence des responsabilités sous `test/unit`,
+séparément du code de production. Pour l’API, les tests PostgreSQL/Mailpit et
+navigateur vivent sous `test/integration` et `test/e2e`, avec des configurations
+Vitest distinctes qui ne sélectionnent que leur suffixe. Le harness commun sous
+`test/support` refuse toute base qui n’appartient pas au projet Compose éphémère
+courant. La suite d’intégration auth conserve dans un seul fichier les étapes
+qui partagent explicitement une identité ; les futures suites indépendantes
+doivent posséder leurs propres données.
 
 ## Frontend et localisation
 

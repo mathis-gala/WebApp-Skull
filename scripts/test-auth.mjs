@@ -3,7 +3,11 @@ import { randomUUID } from "node:crypto"
 import { fileURLToPath } from "node:url"
 
 const root = fileURLToPath(new URL("../", import.meta.url))
-const project = `skull-auth-test-${randomUUID().slice(0, 8)}`
+const suite = process.argv[2]
+if (suite !== "integration" && suite !== "e2e") {
+  throw new Error("Usage: test-auth.mjs <integration|e2e>")
+}
+const project = `skull-code004-test-${randomUUID().slice(0, 8)}`
 const compose = [
   "compose",
   "--env-file",
@@ -42,7 +46,16 @@ try {
     AUTH_TEST_SMTP_PORT: port("mailpit", 1025),
     AUTH_TEST_MAILPIT_URL: `http://127.0.0.1:${port("mailpit", 8025)}`,
   }
-  run("pnpm", ["--filter", "@workspace/api^...", "build"], { env })
+  env.DATABASE_URL = env.AUTH_TEST_DATABASE_URL
+  env.DATABASE_TEST_OWNED = project
+  env.DATABASE_FIXTURE_MODE = "enabled"
+  env.BETTER_AUTH_SECRET = "isolated-test-secret-not-for-production-2026"
+  env.BETTER_AUTH_URL = "http://127.0.0.1:3001"
+  env.WEB_URL = "http://127.0.0.1:3000"
+  run("pnpm", ["--filter", "@workspace/api...", "build"], { env })
+  run("node", ["packages/database/dist/cli/migrate.js"], { env })
+  run("node", ["apps/api/dist/cli/seed.js", "--all"], { env })
+  run("node", ["apps/api/dist/cli/seed.js", "--all"], { env })
   run(
     "pnpm",
     [
@@ -52,10 +65,13 @@ try {
       "vitest",
       "run",
       "--config",
-      "vitest.integration.config.ts",
+      `vitest.${suite}.config.ts`,
     ],
     { env }
   )
+  run("node", ["apps/api/dist/cli/seed.js", "--all", "--clean"], {
+    env,
+  })
 } finally {
   // Only the uniquely named resources created above are removed. No dev volumes exist here.
   run("docker", [...compose, "down", "--remove-orphans"])

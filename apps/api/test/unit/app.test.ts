@@ -1,3 +1,4 @@
+import { PassThrough } from "node:stream"
 import { Body, Controller, Post } from "@nestjs/common"
 import { APP_FILTER, APP_PIPE } from "@nestjs/core"
 import { Test } from "@nestjs/testing"
@@ -7,16 +8,18 @@ import request from "supertest"
 import { z } from "zod"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { createApiApp } from "../src/app.js"
-import { HttpErrorFilter } from "../src/infrastructure/http/http-error.filter.js"
-import { requestContext } from "../src/infrastructure/http/request-context.js"
+import { createApiApp } from "../../src/app.js"
+import { HttpErrorFilter } from "../../src/infrastructure/http/http-error.filter.js"
+import { requestContext } from "../../src/infrastructure/http/request-context.js"
+import { createApiLogger } from "../../src/infrastructure/logging/logging.js"
 import type { INestApplication } from "@nestjs/common"
 import type { RequestHandler } from "express"
-import type { ApiDependencies } from "../src/app.js"
+import type { Logger } from "pino"
+import type { ApiDependencies } from "../../src/app.js"
 import type {
   AuthSession,
   GetSession,
-} from "../src/infrastructure/auth/session.js"
+} from "../../src/infrastructure/auth/session.js"
 
 const openApps = new Set<INestApplication>()
 const inertAuthHandler: RequestHandler = (_request, response) =>
@@ -39,12 +42,20 @@ class ValidationProbeController {
 type TestDependencies = Readonly<{
   authHandler?: RequestHandler
   getSession?: GetSession
+  databaseReady?: () => Promise<void>
+  readinessTimeoutMs?: number
+  logger?: Logger
 }>
 
 async function createTestApp(dependencies: TestDependencies = {}) {
   const apiDependencies: ApiDependencies = {
     authHandler: dependencies.authHandler ?? inertAuthHandler,
     getSession: dependencies.getSession ?? (() => Promise.resolve(null)),
+    databaseReady: dependencies.databaseReady ?? (() => Promise.resolve()),
+    ...(dependencies.readinessTimeoutMs === undefined
+      ? {}
+      : { readinessTimeoutMs: dependencies.readinessTimeoutMs }),
+    ...(dependencies.logger ? { logger: dependencies.logger } : {}),
   }
   const app = await createApiApp(apiDependencies)
   openApps.add(app)
@@ -98,6 +109,65 @@ describe("API", () => {
     await request(app.getHttpServer())
       .get("/health/live")
       .expect(200, { status: "ok" })
+  })
+
+  it("returns readiness only after the database responds", async () => {
+    const databaseReady = vi.fn(() => Promise.resolve())
+    const app = await createTestApp({ databaseReady })
+    await app.init()
+
+    await request(app.getHttpServer())
+      .get("/health/ready")
+      .expect(200, { status: "ok" })
+    expect(databaseReady).toHaveBeenCalledOnce()
+  })
+
+  it("keeps liveness available and bounds readiness when the database stalls", async () => {
+    const app = await createTestApp({
+      databaseReady: () => new Promise(() => {}),
+      readinessTimeoutMs: 20,
+    })
+    await app.init()
+
+    await request(app.getHttpServer())
+      .get("/health/live")
+      .expect(200, { status: "ok" })
+    const response = await request(app.getHttpServer())
+      .get("/health/ready")
+      .expect(503)
+    expect(response.body).toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+      message: "Service unavailable",
+    })
+  })
+
+  it("logs safe HTTP metadata with the response request id", async () => {
+    const destination = new PassThrough()
+    let output = ""
+    destination.on("data", (chunk) => {
+      output += chunk.toString()
+    })
+    const app = await createTestApp({
+      logger: createApiLogger("staging", destination),
+    })
+    await app.init()
+
+    const response = await request(app.getHttpServer())
+      .get("/health/live?token=private-token")
+      .set("Authorization", "Bearer private-authorization")
+      .set("Cookie", "session=private-cookie")
+      .expect(200)
+
+    expect(output).toContain(
+      `"requestId":"${response.headers["x-request-id"]}"`
+    )
+    expect(output).toContain('"method":"GET"')
+    expect(output).toContain('"path":"/health/live"')
+    expect(output).toContain('"status":200')
+    expect(output).toContain('"durationMs":')
+    expect(output).not.toContain("private-token")
+    expect(output).not.toContain("private-authorization")
+    expect(output).not.toContain("private-cookie")
   })
 
   it("delegates auth routes to the Better Auth handler boundary", async () => {

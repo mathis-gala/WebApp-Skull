@@ -4,8 +4,11 @@ import type { Request, RequestHandler } from "express"
 const REQUEST_ID = Symbol("REQUEST_ID")
 
 export const requestContext: RequestHandler = (request, response, next) => {
-  const requestId = randomUUID()
+  const pinoRequestId = Reflect.get(request, "id")
+  const requestId =
+    typeof pinoRequestId === "string" ? pinoRequestId : randomUUID()
   Reflect.set(request, REQUEST_ID, requestId)
+  request.headers["x-request-id"] = requestId
   response.setHeader("x-request-id", requestId)
   next()
 }

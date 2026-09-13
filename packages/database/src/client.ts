@@ -1,4 +1,5 @@
 import { drizzle } from "drizzle-orm/postgres-js"
+import { sql } from "drizzle-orm"
 import postgres from "postgres"
 
 import { databaseConfig } from "./config.js"
@@ -17,6 +18,9 @@ export function createDatabase(databaseUrl: string) {
   return {
     db,
     close: () => client.end(),
+    ready: async () => {
+      await db.execute(sql`select 1`)
+    },
   }
 }
 

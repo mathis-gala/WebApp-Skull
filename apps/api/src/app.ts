@@ -11,29 +11,51 @@ import {
 import cors from "cors"
 import express from "express"
 import { ZodSerializerInterceptor, ZodValidationPipe } from "nestjs-zod"
+import { Logger as PinoNestLogger } from "nestjs-pino"
 
 import { AUTH_SESSION_READER, AuthGuard } from "./infrastructure/auth/guard.js"
 import { HttpErrorFilter } from "./infrastructure/http/http-error.filter.js"
 import { requestContext } from "./infrastructure/http/request-context.js"
+import {
+  createApiLogger,
+  createHttpLogging,
+} from "./infrastructure/logging/logging.js"
 import { HealthController } from "./modules/health/health.controller.js"
+import {
+  DATABASE_READINESS,
+  READINESS_TIMEOUT,
+} from "./modules/health/readiness.js"
 import { IdentityController } from "./modules/identity/identity.controller.js"
 import type { INestApplication } from "@nestjs/common"
 import type { RequestHandler } from "express"
+import type { Logger } from "pino"
 import type { GetSession } from "./infrastructure/auth/session.js"
 
 export type ApiDependencies = Readonly<{
   authHandler: RequestHandler
   getSession: GetSession
+  databaseReady: () => Promise<void>
   allowedOrigin?: string
+  readinessTimeoutMs?: number
+  logger?: Logger
 }>
 
 export async function createApiApp(
   dependencies: ApiDependencies
 ): Promise<INestApplication> {
+  const logger = dependencies.logger ?? createApiLogger("test")
+  const httpLogging = createHttpLogging(logger)
+
   @Module({
+    imports: [httpLogging.module],
     controllers: [HealthController, IdentityController],
     providers: [
       { provide: AUTH_SESSION_READER, useValue: dependencies.getSession },
+      { provide: DATABASE_READINESS, useValue: dependencies.databaseReady },
+      {
+        provide: READINESS_TIMEOUT,
+        useValue: dependencies.readinessTimeoutMs ?? 2000,
+      },
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: APP_PIPE, useClass: ZodValidationPipe },
       { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
@@ -42,9 +64,14 @@ export async function createApiApp(
   })
   class AppModule {}
 
-  const app = await NestFactory.create(AppModule, { bodyParser: false })
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+    bufferLogs: true,
+  })
+  app.useLogger(app.get(PinoNestLogger))
   const expressApp = app.getHttpAdapter().getInstance()
 
+  expressApp.use(httpLogging.middleware)
   expressApp.use(requestContext)
   expressApp.use(
     cors({

@@ -6,13 +6,13 @@ import {
   clearPrivateCache,
   currentUserQueryOptions,
   loadCurrentUserForProtectedRoute,
-} from "./current-user"
+} from "@/lib/auth/current-user"
 
 const { getCurrentUser } = vi.hoisted(() => ({
   getCurrentUser: vi.fn(),
 }))
 
-vi.mock("../api/client", () => ({
+vi.mock("@/lib/api/client", () => ({
   apiClient: { GET: getCurrentUser },
 }))
 

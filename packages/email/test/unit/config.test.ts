@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getEmailConfig } from "./config.js"
+import { getEmailConfig } from "../../src/config.js"
 
 describe("email environment boundary", () => {
   it("refuses a production capture and hides supplied secrets", () => {

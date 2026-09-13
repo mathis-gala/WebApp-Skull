@@ -1,5 +1,5 @@
 import { expect, it } from "vitest"
-import { getSafeInternalRedirect } from "./redirect"
+import { getSafeInternalRedirect } from "@/lib/auth/redirect"
 
 it.each([
   "https://evil.test",

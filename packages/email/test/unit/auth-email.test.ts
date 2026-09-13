@@ -1,8 +1,8 @@
 import { expect, it } from "vitest"
-import { renderAuthEmail } from "./auth-email.js"
+import { renderAuthEmail } from "../../src/auth-email.js"
 import { email_expiry } from "@workspace/i18n/messages"
-import { createSmtpSender } from "./sender.js"
-import { getEmailConfig } from "./config.js"
+import { createSmtpSender } from "../../src/sender.js"
+import { getEmailConfig } from "../../src/config.js"
 
 it("renders French HTML and plain text with the same supplied action and expiry", async () => {
   const email = await renderAuthEmail({

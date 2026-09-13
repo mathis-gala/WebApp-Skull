@@ -22,6 +22,9 @@ Application web TypeScript avec authentification par email et mot de passe.
 | Sonner                                | Notifications accessibles                     |
 | Playwright                            | Parcours navigateur                           |
 | Docker Compose                        | Services locaux                               |
+| Pino et nestjs-pino                   | Logs HTTP structurés et nettoyés              |
+| GitHub Actions                        | Vérification Node 24 isolée                   |
+| Gitleaks                              | Détection de secrets dans l’historique Git    |
 
 ## Démarrage
 
@@ -50,18 +53,25 @@ pnpm dev             # démarre l'API et le web
 pnpm check           # format, lint, types, tests et builds
 pnpm test            # tests rapides Vitest
 pnpm test:integration # auth réelle dans PostgreSQL/Mailpit isolés
+pnpm test:e2e        # parcours mobile dans des services isolés neufs
+pnpm docs:check      # présence des documents et validité des liens locaux
+pnpm project:check   # frontières, métadonnées et versions d’infrastructure
 pnpm api:generate    # régénère OpenAPI et les types du client web
 pnpm api:check       # détecte une dérive des contrats générés
 pnpm db:generate     # génère une migration depuis le schéma
 pnpm db:migrate      # applique les migrations à la cible configurée
+pnpm db:seed -- --scenario auth # restaure les deux comptes locaux déterministes
+pnpm db:seed -- --scenario auth --clean # supprime seulement ces fixtures
+pnpm db:seed -- --all # exécute tous les scénarios dans l’ordre du registre
 pnpm db:studio       # ouvre Drizzle Studio
 pnpm dev:infra       # démarre PostgreSQL et Mailpit
 pnpm dev:down        # arrête les services sans supprimer leurs données
 ```
 
-`pnpm setup` démarre PostgreSQL et applique les migrations. Il ne crée aucune
-donnée applicative. Les seeders et la CI restent à livrer. Les emails
-locaux sont consultables dans Mailpit.
+`pnpm setup` démarre PostgreSQL et applique les migrations seulement après
+validation de la cible locale. Il ne crée aucune donnée applicative. Le seed
+auth est séparé, explicite et réservé aux cibles de développement ou de test
+vérifiées. Les emails locaux sont consultables dans Mailpit.
 
 ## Structure
 

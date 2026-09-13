@@ -15,7 +15,8 @@ import type { AuthEmailDispatcher } from "../email/auth-email-dispatcher.js"
 export function createAuth(
   db: Database,
   env: ApiEnv,
-  emails: AuthEmailDispatcher
+  emails: AuthEmailDispatcher,
+  reportProviderLog: (level: string) => void = () => undefined
 ) {
   return betterAuth({
     appName: projectConfig.name,
@@ -28,7 +29,7 @@ export function createAuth(
     }),
     logger: {
       log: (level) => {
-        console.error(JSON.stringify({ event: "auth.provider", level }))
+        reportProviderLog(level)
       },
     },
     advanced: {
@@ -79,12 +80,13 @@ export function createAuth(
       sendOnSignUp: true,
       sendOnSignIn: false,
       autoSignInAfterVerification: false,
-      sendVerificationEmail: ({ user, url }) => {
+      sendVerificationEmail: ({ user, url }, request) => {
         emails.enqueue({
           kind: "verification",
           to: user.email,
           url,
           locale: DEFAULT_LOCALE,
+          requestId: request?.headers.get("x-request-id") ?? undefined,
         })
         return Promise.resolve()
       },
@@ -98,12 +100,13 @@ export function createAuth(
       resetPasswordTokenExpiresIn:
         authConfig.resetPasswordTokenExpiresInSeconds,
       revokeSessionsOnPasswordReset: true,
-      sendResetPassword: ({ user, url }) => {
+      sendResetPassword: ({ user, url }, request) => {
         emails.enqueue({
           kind: "reset",
           to: user.email,
           url,
           locale: DEFAULT_LOCALE,
+          requestId: request?.headers.get("x-request-id") ?? undefined,
         })
         return Promise.resolve()
       },

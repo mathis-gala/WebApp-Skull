@@ -1,7 +1,7 @@
 import { createServer } from "node:net"
 import { expect, it } from "vitest"
-import { createSmtpSender } from "./sender.js"
-import { getEmailConfig } from "./config.js"
+import { createSmtpSender } from "../../src/sender.js"
+import { getEmailConfig } from "../../src/config.js"
 import type { Socket } from "node:net"
 
 it("bounds a suspended local SMTP connection and closes its socket", async () => {

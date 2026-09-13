@@ -56,18 +56,22 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
-    CurrentUserDto_Output: {
-      id: string
-      name: string
-      /** Format: email */
-      email: string
-      emailVerified: boolean
+    HealthResponseDto: {
+      /** @enum {string} */
+      status: "ok"
     }
     ApiErrorDto: {
       code: string
       message: string
       requestId: string
       details?: unknown
+    }
+    CurrentUserDto_Output: {
+      id: string
+      name: string
+      /** Format: email */
+      email: string
+      emailVerified: boolean
     }
   }
   responses: never
@@ -108,7 +112,17 @@ export interface operations {
         headers: {
           [name: string]: unknown
         }
-        content?: never
+        content: {
+          "application/json": components["schemas"]["HealthResponseDto"]
+        }
+      }
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"]
+        }
       }
     }
   }

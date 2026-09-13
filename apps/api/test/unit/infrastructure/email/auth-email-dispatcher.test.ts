@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest"
-import { AuthEmailDispatcher } from "../src/infrastructure/email/auth-email-dispatcher.js"
-import type { EmailEvent } from "../src/infrastructure/email/auth-email-dispatcher.js"
+import { AuthEmailDispatcher } from "../../../../src/infrastructure/email/auth-email-dispatcher.js"
+import type { EmailEvent } from "../../../../src/infrastructure/email/auth-email-dispatcher.js"
 
 const input = {
   kind: "verification",
   to: "test@example.test",
   url: "https://example.test?token=private-token",
   locale: "fr",
+  requestId: "request-test-1",
 } as const
 
 describe("tracked auth email dispatch", () => {
@@ -14,11 +15,10 @@ describe("tracked auth email dispatch", () => {
     const events: Array<EmailEvent> = []
     const dispatcher = new AuthEmailDispatcher(
       {
-        send: async () => {
-          throw new Error(
-            "private-password smtp.example.test test@example.test"
-          )
-        },
+        send: () =>
+          Promise.reject(
+            new Error("private-password smtp.example.test test@example.test")
+          ),
       },
       (event) => {
         events.push(event)
@@ -26,7 +26,13 @@ describe("tracked auth email dispatch", () => {
     )
     dispatcher.enqueue(input)
     await dispatcher.drain()
-    expect(events).toEqual([{ event: "email.failed", kind: "verification" }])
+    expect(events).toEqual([
+      {
+        event: "email.failed",
+        kind: "verification",
+        requestId: "request-test-1",
+      },
+    ])
   })
   it("bounds shutdown when delivery never settles", async () => {
     const events: Array<EmailEvent> = []

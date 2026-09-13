@@ -6,6 +6,7 @@
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
     "DATABASE_URL",
+    "DATABASE_FIXTURE_MODE",
     "VITE_API_URL",
     "WEB_URL",
     "APP_ENV",
@@ -28,6 +29,9 @@
       "cache": false
     },
     "db:migrate": {
+      "cache": false
+    },
+    "db:seed": {
       "cache": false
     },
     "db:studio": {
@@ -64,6 +68,9 @@
     },
     "@workspace/i18n#build": {
       "outputs": ["src/generated/**"]
+    },
+    "@workspace/i18n#typecheck": {
+      "dependsOn": ["build"]
     },
     "web#dev": {
       "with": ["@workspace/i18n#dev"],
