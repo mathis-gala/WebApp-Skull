@@ -69,6 +69,9 @@
     "@workspace/i18n#build": {
       "outputs": ["src/generated/**"]
     },
+    "@workspace/i18n#typecheck": {
+      "dependsOn": ["build"]
+    },
     "web#dev": {
       "with": ["@workspace/i18n#dev"],
       "cache": false,

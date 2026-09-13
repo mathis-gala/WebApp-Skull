@@ -6,7 +6,7 @@
   "scripts": {
     "build": "paraglide-js compile --project ./project.inlang --outdir ./src/generated --strategy baseLocale --emit-ts-declarations",
     "dev": "paraglide-js compile --project ./project.inlang --outdir ./src/generated --watch --strategy baseLocale --emit-ts-declarations",
-    "typecheck": "pnpm build"
+    "typecheck": "tsc --noEmit"
   },
   "exports": {
     "./config": "./src/config.ts",
