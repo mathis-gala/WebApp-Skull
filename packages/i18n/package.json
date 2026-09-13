@@ -9,6 +9,7 @@
     "typecheck": "pnpm build"
   },
   "exports": {
+    "./config": "./src/config.ts",
     "./messages": "./src/generated/messages.js",
     "./runtime": "./src/generated/runtime.js"
   },

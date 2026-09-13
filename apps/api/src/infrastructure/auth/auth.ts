@@ -1,6 +1,7 @@
 import { schema } from "@workspace/database"
 import { authPasswordConstraints } from "@workspace/contracts/auth/constraints"
 import projectConfig from "@workspace/config/project" with { type: "json" }
+import { DEFAULT_LOCALE } from "@workspace/i18n/config"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
@@ -83,7 +84,7 @@ export function createAuth(
           kind: "verification",
           to: user.email,
           url,
-          locale: "fr",
+          locale: DEFAULT_LOCALE,
         })
         return Promise.resolve()
       },
@@ -98,7 +99,12 @@ export function createAuth(
         authConfig.resetPasswordTokenExpiresInSeconds,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: ({ user, url }) => {
-        emails.enqueue({ kind: "reset", to: user.email, url, locale: "fr" })
+        emails.enqueue({
+          kind: "reset",
+          to: user.email,
+          url,
+          locale: DEFAULT_LOCALE,
+        })
         return Promise.resolve()
       },
     },
