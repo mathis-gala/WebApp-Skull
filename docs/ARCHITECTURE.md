@@ -103,9 +103,11 @@ Le header et l’accueil sont des composants indépendants des routes.
 
 `packages/i18n/messages/fr.json` est le catalogue Paraglide des écrans et emails.
 Le compiler génère fonctions et déclarations ; la stratégie `baseLocale` garde
-SSR et navigateur en français. Ajouter une langue demandera une stratégie de
-sélection et un mapping des chemins explicites. L’identité publique reste JSON
-dans `packages/config`, les contraintes sont dans leurs modules TypeScript.
+SSR et navigateur en français. `packages/i18n/src/config.ts` expose la locale
+par défaut et les locales supportées depuis ce runtime généré. Ajouter une langue
+demandera une stratégie de sélection et un mapping des chemins explicites.
+L’identité publique reste JSON dans `packages/config`, les contraintes sont dans
+leurs modules TypeScript.
 
 Les routes `/connexion`, `/inscription`, `/verification-email`,
 `/adresse-confirmee`, `/mot-de-passe-oublie` et `/nouveau-mot-de-passe` sont privées

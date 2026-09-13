@@ -37,6 +37,8 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 
 - `apps/api/src/infrastructure/auth/guard.ts` : protection globale Nest et
   décorateurs `Public` et `CurrentUser`.
+- `apps/api/src/infrastructure/auth/auth.config.ts` : durées de session et de
+  jetons, fenêtre et quotas du rate limit Better Auth.
 - `packages/contracts/src/identity.ts` : forme publique de l'identité courante.
 - `apps/api/src/infrastructure/http/http-error.filter.ts` : enveloppe d'erreur
   des controllers Nest ; ne pas l'appliquer aux routes Better Auth.
@@ -58,6 +60,8 @@ source et sa règle d'usage.
   événements nettoyés et drainage à l’arrêt.
 - `packages/i18n/messages/fr.json` : catalogue commun ; importer uniquement les
   fonctions requises depuis `@workspace/i18n/messages`.
+- `packages/i18n/src/config.ts` : `DEFAULT_LOCALE` et `SUPPORTED_LOCALES`
+  dérivés du runtime Paraglide généré.
 - `apps/web/src/features/auth/components/auth-input.tsx` : champ auth avec label,
   erreurs associées et saisie contrôlée ; réutiliser dans les formulaires auth.
 - `apps/web/src/features/auth/components/auth-panel.tsx` : cadre commun aux
