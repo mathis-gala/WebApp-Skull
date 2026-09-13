@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest"
 
-import { createShutdown } from "./shutdown.js"
-import type { ShutdownEvent } from "./shutdown.js"
+import { createShutdown } from "../../../../src/infrastructure/lifecycle/shutdown.js"
+import type { ShutdownEvent } from "../../../../src/infrastructure/lifecycle/shutdown.js"
 
 it("closes every resource in order once when shutdown is requested twice", async () => {
   const order: Array<string> = []

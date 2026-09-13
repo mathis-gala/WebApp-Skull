@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { verifyDatabaseTarget, withVerifiedDatabaseTarget } from "./target.js"
+import {
+  verifyDatabaseTarget,
+  withVerifiedDatabaseTarget,
+} from "../../src/target.js"
 
 const developmentTarget = {
   APP_ENV: "development",

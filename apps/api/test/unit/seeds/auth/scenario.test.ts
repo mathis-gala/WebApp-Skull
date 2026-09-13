@@ -4,13 +4,13 @@ import {
   AUTH_FIXTURES,
   AUTH_FIXTURE_PASSWORD,
   createAuthSeedScenario,
-} from "./scenario.js"
+} from "../../../../src/seeds/auth/scenario.js"
 import type {
   AuthFixtureStore,
   ExistingAuthFixture,
   PreparedAuthFixture,
-} from "./scenario.js"
-import type { SeedScenario } from "../seed.js"
+} from "../../../../src/seeds/auth/scenario.js"
+import type { SeedScenario } from "../../../../src/seeds/seed.js"
 
 const hashPassword = vi.fn((password: string) =>
   Promise.resolve(`hash:${password}`)

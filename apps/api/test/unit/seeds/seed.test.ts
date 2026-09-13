@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { runSeedCommand } from "./seed.js"
-import type { SeedScenario } from "./seed.js"
+import { runSeedCommand } from "../../../src/seeds/seed.js"
+import type { SeedScenario } from "../../../src/seeds/seed.js"
 
 function recordingScenario(name: string, calls: Array<string>): SeedScenario {
   return {

@@ -109,11 +109,12 @@ pnpm test:integration
 pnpm test:e2e
 ```
 
-Les tests rapides sont colocalisés avec leur source sous `apps/api/src` et
-portent le suffixe `.test.ts`. La configuration unitaire ne charge que ces
-fichiers. Les tests avec services réels vivent sous `test/integration` avec le
-suffixe `.integration.test.ts` ; les parcours navigateur vivent sous `test/e2e`
-avec le suffixe `.e2e.test.ts`. Chaque famille possède sa configuration Vitest.
+Les tests rapides des applications et packages sont centralisés sous leur
+dossier `test/unit`, avec une arborescence qui reflète la responsabilité testée.
+Leurs configurations Vitest ne chargent que ces fichiers. Les tests API avec
+services réels vivent sous `test/integration` avec le suffixe
+`.integration.test.ts` ; les parcours navigateur vivent sous `test/e2e` avec le
+suffixe `.e2e.test.ts`. Chaque famille possède sa configuration Vitest.
 
 Le harness crée un projet Compose UUID distinct, PostgreSQL en tmpfs et Mailpit
 sans relais, avec ports loopback dynamiques. Il ne lit pas `.env`, n’utilise pas

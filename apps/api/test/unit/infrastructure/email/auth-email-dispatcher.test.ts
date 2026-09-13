@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { AuthEmailDispatcher } from "./auth-email-dispatcher.js"
-import type { EmailEvent } from "./auth-email-dispatcher.js"
+import { AuthEmailDispatcher } from "../../../../src/infrastructure/email/auth-email-dispatcher.js"
+import type { EmailEvent } from "../../../../src/infrastructure/email/auth-email-dispatcher.js"
 
 const input = {
   kind: "verification",

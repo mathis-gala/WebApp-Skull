@@ -8,15 +8,18 @@ import request from "supertest"
 import { z } from "zod"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { createApiApp } from "./app.js"
-import { HttpErrorFilter } from "./infrastructure/http/http-error.filter.js"
-import { requestContext } from "./infrastructure/http/request-context.js"
-import { createApiLogger } from "./infrastructure/logging/logging.js"
+import { createApiApp } from "../../src/app.js"
+import { HttpErrorFilter } from "../../src/infrastructure/http/http-error.filter.js"
+import { requestContext } from "../../src/infrastructure/http/request-context.js"
+import { createApiLogger } from "../../src/infrastructure/logging/logging.js"
 import type { INestApplication } from "@nestjs/common"
 import type { RequestHandler } from "express"
 import type { Logger } from "pino"
-import type { ApiDependencies } from "./app.js"
-import type { AuthSession, GetSession } from "./infrastructure/auth/session.js"
+import type { ApiDependencies } from "../../src/app.js"
+import type {
+  AuthSession,
+  GetSession,
+} from "../../src/infrastructure/auth/session.js"
 
 const openApps = new Set<INestApplication>()
 const inertAuthHandler: RequestHandler = (_request, response) =>

@@ -134,15 +134,17 @@ Un crash peut perdre un envoi, sans retry automatique.
 implémente le rendu React Email et SMTP ; l’API compose les adaptateurs selon
 `APP_ENV`. Le web n’importe aucun de ces modules serveur.
 
-## Tests API
+## Tests des applications
 
-Les tests rapides sont colocalisés sous `src` et la compilation de production
-les exclut. Les tests PostgreSQL/Mailpit et navigateur restent sous `test`, avec
-des configurations Vitest distinctes qui ne sélectionnent que leur suffixe.
-Le harness commun sous `test/support` refuse toute base qui n’appartient pas au
-projet Compose éphémère courant. La suite d’intégration auth conserve dans un
-seul fichier les étapes qui partagent explicitement une identité ; les futures
-suites indépendantes doivent posséder leurs propres données.
+Tous les tests restent sous le dossier `test` de leur application ou package.
+Les tests rapides suivent l’arborescence des responsabilités sous `test/unit`,
+séparément du code de production. Pour l’API, les tests PostgreSQL/Mailpit et
+navigateur vivent sous `test/integration` et `test/e2e`, avec des configurations
+Vitest distinctes qui ne sélectionnent que leur suffixe. Le harness commun sous
+`test/support` refuse toute base qui n’appartient pas au projet Compose éphémère
+courant. La suite d’intégration auth conserve dans un seul fichier les étapes
+qui partagent explicitement une identité ; les futures suites indépendantes
+doivent posséder leurs propres données.
 
 ## Frontend et localisation
 

@@ -1,6 +1,6 @@
 import { expect, it } from "vitest"
 
-import { parseSeedCommand } from "./seed-command.js"
+import { parseSeedCommand } from "../../../src/cli/seed-command.js"
 
 it.each([
   { arguments_: [] },

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest"
-import { getEnv } from "./env.js"
+import { getEnv } from "../../../src/config/env.js"
 
 it("rejects insecure deployed auth origins without leaking configuration values", () => {
   const values = {

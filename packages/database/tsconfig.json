@@ -4,5 +4,11 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["drizzle.config.ts", "drizzle.generate.config.ts", "src/**/*.ts"]
+  "include": [
+    "drizzle.config.ts",
+    "drizzle.generate.config.ts",
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "vitest.config.ts"
+  ]
 }
