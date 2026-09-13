@@ -2,6 +2,8 @@ import { renderAuthEmail } from "@workspace/email"
 import type { AuthEmailInput } from "@workspace/email"
 import type { EmailSender } from "@workspace/core/email"
 
+const EMAIL_DRAIN_TIMEOUT_MS = 15_000 // 15 seconds
+
 export interface EmailEvent {
   event: "email.accepted" | "email.failed" | "email.drain_timeout"
   kind?: AuthEmailInput["kind"]
@@ -35,7 +37,7 @@ export class AuthEmailDispatcher {
     })
   }
 
-  async drain(timeoutMs = 15000) {
+  async drain(timeoutMs = EMAIL_DRAIN_TIMEOUT_MS) {
     let timer: ReturnType<typeof setTimeout> | undefined
     try {
       await Promise.race([

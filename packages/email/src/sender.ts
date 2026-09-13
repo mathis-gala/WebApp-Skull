@@ -4,6 +4,8 @@ import nodemailer from "nodemailer"
 import type { EmailMessage, EmailSender } from "@workspace/core/email"
 import type { EmailConfig } from "./config.js"
 
+const SMTP_TIMEOUT_MS = 10_000 // 10 seconds
+
 export function createSmtpSender(config: EmailConfig): EmailSender {
   return {
     async send(message) {
@@ -37,10 +39,10 @@ export function createSmtpSender(config: EmailConfig): EmailSender {
         auth: config.SMTP_USER
           ? { user: config.SMTP_USER, pass: config.SMTP_PASSWORD }
           : undefined,
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
-        dnsTimeout: 10000,
+        connectionTimeout: SMTP_TIMEOUT_MS,
+        greetingTimeout: SMTP_TIMEOUT_MS,
+        socketTimeout: SMTP_TIMEOUT_MS,
+        dnsTimeout: SMTP_TIMEOUT_MS,
         disableFileAccess: true,
         disableUrlAccess: true,
         logger: false,
@@ -61,7 +63,7 @@ export function createSmtpSender(config: EmailConfig): EmailSender {
               socket?.destroy(new Error("EMAIL_TIMEOUT"))
               transport.close()
               reject(new Error("EMAIL_TIMEOUT"))
-            }, 10000)
+            }, SMTP_TIMEOUT_MS)
           }),
         ])
       } catch {

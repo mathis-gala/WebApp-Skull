@@ -5,6 +5,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
 import { createRateLimitStore } from "./rate-limit-store.js"
+import { authConfig } from "./auth.config.js"
 import type { Database } from "@workspace/database"
 import type { ApiEnv } from "../../config/env.js"
 
@@ -36,23 +37,44 @@ export function createAuth(
       defaultCookieAttributes: { httpOnly: true, sameSite: "lax" },
       ipAddress: { ipAddressHeaders: ["x-auth-client-ip"] },
     },
-    session: { expiresIn: 7 * 86400, updateAge: 86400 },
+    session: {
+      expiresIn: authConfig.session.expiresInSeconds,
+      updateAge: authConfig.session.updateAgeSeconds,
+    },
     rateLimit: {
       enabled: true,
       storage: "database",
-      customStorage: createRateLimitStore(db, 60),
-      window: 60,
-      max: 100,
+      customStorage: createRateLimitStore(
+        db,
+        authConfig.rateLimit.windowSeconds
+      ),
+      window: authConfig.rateLimit.windowSeconds,
+      max: authConfig.rateLimit.defaultMaxRequests,
       customRules: {
-        "/sign-in/email": { window: 60, max: 5 },
-        "/sign-up/email": { window: 60, max: 5 },
-        "/send-verification-email": { window: 60, max: 5 },
-        "/request-password-reset": { window: 60, max: 5 },
-        "/reset-password": { window: 60, max: 5 },
+        "/sign-in/email": {
+          window: authConfig.rateLimit.windowSeconds,
+          max: authConfig.rateLimit.sensitiveMaxRequests,
+        },
+        "/sign-up/email": {
+          window: authConfig.rateLimit.windowSeconds,
+          max: authConfig.rateLimit.sensitiveMaxRequests,
+        },
+        "/send-verification-email": {
+          window: authConfig.rateLimit.windowSeconds,
+          max: authConfig.rateLimit.sensitiveMaxRequests,
+        },
+        "/request-password-reset": {
+          window: authConfig.rateLimit.windowSeconds,
+          max: authConfig.rateLimit.sensitiveMaxRequests,
+        },
+        "/reset-password": {
+          window: authConfig.rateLimit.windowSeconds,
+          max: authConfig.rateLimit.sensitiveMaxRequests,
+        },
       },
     },
     emailVerification: {
-      expiresIn: 86400,
+      expiresIn: authConfig.emailVerificationExpiresInSeconds,
       sendOnSignUp: true,
       sendOnSignIn: false,
       autoSignInAfterVerification: false,
@@ -72,7 +94,8 @@ export function createAuth(
       maxPasswordLength: authPasswordConstraints.maxLength,
       requireEmailVerification: true,
       autoSignIn: false,
-      resetPasswordTokenExpiresIn: 3600,
+      resetPasswordTokenExpiresIn:
+        authConfig.resetPasswordTokenExpiresInSeconds,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: ({ user, url }) => {
         emails.enqueue({ kind: "reset", to: user.email, url, locale: "fr" })
