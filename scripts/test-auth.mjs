@@ -49,14 +49,14 @@ try {
   }
   env.DATABASE_URL = env.AUTH_TEST_DATABASE_URL
   env.DATABASE_TEST_OWNED = project
-  env.DATABASE_FIXTURE_MODE = "auth"
+  env.DATABASE_FIXTURE_MODE = "enabled"
   env.BETTER_AUTH_SECRET = "isolated-test-secret-not-for-production-2026"
   env.BETTER_AUTH_URL = "http://127.0.0.1:3001"
   env.WEB_URL = "http://127.0.0.1:3000"
   run("pnpm", ["--filter", "@workspace/api...", "build"], { env })
   run("node", ["packages/database/dist/cli/migrate.js"], { env })
-  run("node", ["apps/api/dist/cli/seed.js", "--scenario", "auth"], { env })
-  run("node", ["apps/api/dist/cli/seed.js", "--scenario", "auth"], { env })
+  run("node", ["apps/api/dist/cli/seed.js", "--all"], { env })
+  run("node", ["apps/api/dist/cli/seed.js", "--all"], { env })
   run(
     "pnpm",
     [
@@ -70,7 +70,7 @@ try {
     ],
     { env }
   )
-  run("node", ["apps/api/dist/cli/seed.js", "--scenario", "auth", "--clean"], {
+  run("node", ["apps/api/dist/cli/seed.js", "--all", "--clean"], {
     env,
   })
 } finally {

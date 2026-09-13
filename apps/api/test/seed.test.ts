@@ -1,86 +1,247 @@
 import { describe, expect, it, vi } from "vitest"
-
+import { parseSeedCommand } from "../src/cli/seed-command.js"
 import {
+  AUTH_FIXTURES,
   AUTH_FIXTURE_PASSWORD,
-  cleanAuthFixtures,
-  seedAuthFixtures,
+  createAuthSeedScenario,
 } from "../src/seeds/auth.js"
+import { runSeedCommand } from "../src/seeds/seed.js"
 import type {
-  AuthFixture,
   AuthFixtureStore,
   ExistingAuthFixture,
+  PreparedAuthFixture,
 } from "../src/seeds/auth.js"
+import type { SeedScenario } from "../src/seeds/seed.js"
 
-function createStore() {
-  const users = new Map<string, ExistingAuthFixture>()
-  const create = vi.fn(async (fixture: AuthFixture) => {
-    const user = { id: `fixture-${users.size + 1}`, emailVerified: false }
-    users.set(fixture.email, user)
-    return user
-  })
-  const markEmailVerified = vi.fn(async (id: string) => {
-    for (const [email, user] of users) {
-      if (user.id === id) users.set(email, { ...user, emailVerified: true })
-    }
-  })
-  const store: AuthFixtureStore = {
-    findByEmail: (email) => Promise.resolve(users.get(email) ?? null),
-    create,
-    markEmailVerified,
-    async deleteByEmails(emails) {
-      let deleted = 0
-      for (const email of emails) {
-        if (users.delete(email)) deleted += 1
-      }
-      return deleted
-    },
+const hashPassword = vi.fn(async (password: string) => `hash:${password}`)
+
+function existingFixture(index: number): ExistingAuthFixture {
+  const fixture = AUTH_FIXTURES[index]!
+  return {
+    id: fixture.id,
+    email: fixture.email,
+    name: fixture.name,
+    accounts: [
+      {
+        id: fixture.accountId,
+        accountId: fixture.id,
+        providerId: "credential",
+        password: "old-hash",
+      },
+    ],
   }
-  return { create, markEmailVerified, store, users }
 }
 
-describe("auth seed scenario", () => {
-  it("creates verified and unverified fixtures through the auth boundary", async () => {
-    const fixtureStore = createStore()
+function createStore(initial: ReadonlyArray<ExistingAuthFixture> = []) {
+  const users = new Map(initial.map((user) => [user.email, user]))
+  const removeRecognized = vi.fn(async (ids: ReadonlyArray<string>) => {
+    for (const [email, user] of users)
+      if (ids.includes(user.id)) users.delete(email)
+  })
+  const replaceRecognized = vi.fn(
+    async (
+      ids: ReadonlyArray<string>,
+      fixtures: ReadonlyArray<PreparedAuthFixture>
+    ) => {
+      await removeRecognized(ids)
+      for (const fixture of fixtures) {
+        users.set(fixture.email, {
+          id: fixture.id,
+          email: fixture.email,
+          name: fixture.name,
+          accounts: [
+            {
+              id: fixture.accountId,
+              accountId: fixture.id,
+              providerId: "credential",
+              password: fixture.passwordHash,
+            },
+          ],
+        })
+      }
+    }
+  )
+  const store: AuthFixtureStore = {
+    findReserved: ({ accountIds, emails, userIds }) =>
+      Promise.resolve(
+        [...users.values()].filter(
+          (user) =>
+            emails.includes(user.email) ||
+            userIds.includes(user.id) ||
+            user.accounts.some(({ id }) => accountIds.includes(id))
+        )
+      ),
+    replaceRecognized,
+    removeRecognized,
+  }
+  return { removeRecognized, replaceRecognized, store, users }
+}
 
-    await expect(seedAuthFixtures(fixtureStore.store)).resolves.toEqual({
-      created: 2,
-      preserved: 0,
-    })
-    expect(fixtureStore.create).toHaveBeenCalledTimes(2)
-    expect(fixtureStore.create.mock.calls[0]?.[0].password).toBe(
-      AUTH_FIXTURE_PASSWORD
+async function runPrepared(scenario: SeedScenario, clean = false) {
+  const operation = await (clean
+    ? scenario.prepareClean()
+    : scenario.prepareSeed())
+  await operation()
+}
+
+function recordingScenario(name: string, calls: Array<string>): SeedScenario {
+  return {
+    name,
+    async prepareSeed() {
+      calls.push(`prepare-seed:${name}`)
+      return async () => void calls.push(`seed:${name}`)
+    },
+    async prepareClean() {
+      calls.push(`prepare-clean:${name}`)
+      return async () => void calls.push(`clean:${name}`)
+    },
+  }
+}
+
+describe("seed command", () => {
+  it("prepares all scenarios before seeding in registry order and cleaning in reverse", async () => {
+    const calls: Array<string> = []
+    const registry = ["auth", "catalog"].map((name) =>
+      recordingScenario(name, calls)
     )
-    expect(fixtureStore.users.get("verified@example.test")?.emailVerified).toBe(
+    await runSeedCommand(parseSeedCommand(["--all"]), registry)
+    await runSeedCommand(parseSeedCommand(["--all", "--clean"]), registry)
+    expect(calls).toEqual([
+      "prepare-seed:auth",
+      "prepare-seed:catalog",
+      "seed:auth",
+      "seed:catalog",
+      "prepare-clean:catalog",
+      "prepare-clean:auth",
+      "clean:catalog",
+      "clean:auth",
+    ])
+  })
+
+  it("does not mutate when a later selected scenario fails preflight", async () => {
+    const mutate = vi.fn(() => Promise.resolve())
+    const registry: ReadonlyArray<SeedScenario> = [
+      {
+        name: "first",
+        prepareSeed: async () => mutate,
+        prepareClean: async () => mutate,
+      },
+      {
+        name: "second",
+        prepareSeed: () => Promise.reject(new Error("collision")),
+        prepareClean: () => Promise.reject(new Error("collision")),
+      },
+    ]
+    await expect(
+      runSeedCommand(parseSeedCommand(["--all"]), registry)
+    ).rejects.toThrow("collision")
+    expect(mutate).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { arguments_: [] },
+    { arguments_: ["--all", "--scenario", "auth"] },
+    { arguments_: ["--scenario"] },
+    { arguments_: ["--scenario", ""] },
+    { arguments_: ["--all", "extra"] },
+  ])(
+    "rejects ambiguous or incomplete arguments $arguments_",
+    ({ arguments_ }) =>
+      expect(() => parseSeedCommand(arguments_)).toThrow("Usage:")
+  )
+
+  it("rejects unknown, empty, and duplicate registered scenarios", async () => {
+    await expect(
+      runSeedCommand(parseSeedCommand(["--scenario", "missing"]), [])
+    ).rejects.toThrow("Unknown seed scenario")
+    await expect(
+      runSeedCommand(parseSeedCommand(["--all"]), [recordingScenario(" ", [])])
+    ).rejects.toThrow("must not be empty")
+    await expect(
+      runSeedCommand(parseSeedCommand(["--all"]), [
+        recordingScenario("auth", []),
+        recordingScenario("auth", []),
+      ])
+    ).rejects.toThrow("Duplicate")
+  })
+})
+
+describe("auth seed scenario", () => {
+  it("hashes every password before atomically replacing fixtures", async () => {
+    const fixtureStore = createStore()
+    await runPrepared(createAuthSeedScenario(fixtureStore.store, hashPassword))
+    expect(fixtureStore.replaceRecognized).toHaveBeenCalledTimes(1)
+    const [, prepared] = fixtureStore.replaceRecognized.mock.calls[0]!
+    expect(prepared).toHaveLength(2)
+    expect(prepared[0]).toMatchObject({
+      id: AUTH_FIXTURES[0]!.id,
+      accountId: AUTH_FIXTURES[0]!.accountId,
+      passwordHash: `hash:${AUTH_FIXTURE_PASSWORD}`,
+    })
+  })
+
+  it("replaces recognized fixtures to restore deterministic values", async () => {
+    const fixtureStore = createStore([existingFixture(0), existingFixture(1)])
+    await runPrepared(createAuthSeedScenario(fixtureStore.store, hashPassword))
+    expect(fixtureStore.replaceRecognized).toHaveBeenCalledWith(
+      AUTH_FIXTURES.map(({ id }) => id),
+      expect.any(Array)
+    )
+  })
+
+  it.each([
+    {
+      ...existingFixture(0),
+      id: "lookalike-user",
+    },
+    {
+      ...existingFixture(0),
+      accounts: [
+        { ...existingFixture(0).accounts[0]!, id: "lookalike-account" },
+      ],
+    },
+    {
+      ...existingFixture(0),
+      email: "different@example.test",
+    },
+    {
+      id: "different-user",
+      email: "different@example.test",
+      name: "Different",
+      accounts: [existingFixture(0).accounts[0]!],
+    },
+  ])("refuses lookalike fixture ownership before mutation", async (user) => {
+    const fixtureStore = createStore([user])
+    await expect(
+      createAuthSeedScenario(fixtureStore.store, hashPassword).prepareSeed()
+    ).rejects.toThrow("collision")
+    expect(fixtureStore.replaceRecognized).not.toHaveBeenCalled()
+    expect(fixtureStore.removeRecognized).not.toHaveBeenCalled()
+  })
+
+  it("does not mutate when password preparation fails", async () => {
+    const fixtureStore = createStore([existingFixture(0), existingFixture(1)])
+    const failingHash = vi
+      .fn<(password: string) => Promise<string>>()
+      .mockResolvedValueOnce("hash")
+      .mockRejectedValueOnce(new Error("hash failed"))
+    await expect(
+      createAuthSeedScenario(fixtureStore.store, failingHash).prepareSeed()
+    ).rejects.toThrow("hash failed")
+    expect(fixtureStore.replaceRecognized).not.toHaveBeenCalled()
+    expect(fixtureStore.removeRecognized).not.toHaveBeenCalled()
+  })
+
+  it("cleans recognized fixtures while preserving other users", async () => {
+    const fixtureStore = createStore([
+      existingFixture(0),
+      existingFixture(1),
+      { id: "other", email: "other@example.test", name: "Other", accounts: [] },
+    ])
+    await runPrepared(
+      createAuthSeedScenario(fixtureStore.store, hashPassword),
       true
     )
-    expect(
-      fixtureStore.users.get("unverified@example.test")?.emailVerified
-    ).toBe(false)
-  })
-
-  it("preserves every existing account when rerun", async () => {
-    const fixtureStore = createStore()
-    await seedAuthFixtures(fixtureStore.store)
-    fixtureStore.create.mockClear()
-    fixtureStore.markEmailVerified.mockClear()
-
-    await expect(seedAuthFixtures(fixtureStore.store)).resolves.toEqual({
-      created: 0,
-      preserved: 2,
-    })
-    expect(fixtureStore.create).not.toHaveBeenCalled()
-    expect(fixtureStore.markEmailVerified).not.toHaveBeenCalled()
-  })
-
-  it("cleans only the named auth fixtures when explicitly requested", async () => {
-    const fixtureStore = createStore()
-    await seedAuthFixtures(fixtureStore.store)
-    fixtureStore.users.set("developer@example.test", {
-      id: "developer",
-      emailVerified: true,
-    })
-
-    await expect(cleanAuthFixtures(fixtureStore.store)).resolves.toBe(2)
-    expect([...fixtureStore.users.keys()]).toEqual(["developer@example.test"])
+    expect([...fixtureStore.users.keys()]).toEqual(["other@example.test"])
   })
 })

@@ -93,13 +93,21 @@ fermée.
 ## Migrations et fixtures
 
 Les commandes d’écriture vérifient `APP_ENV`, le protocole, l’hôte loopback et
-le nom exact de la base avant de charger le client PostgreSQL. Les tests exigent
-en plus un identifiant d’environnement éphémère possédé ; le seed exige le mode
-fixture `auth`. Aucun migrateur ou seed ne s’exécute au démarrage de l’API.
+la concordance de la cible avec `POSTGRES_DB`, `POSTGRES_USER`,
+`POSTGRES_PASSWORD` et `POSTGRES_PORT` avant de charger le client PostgreSQL.
+Leurs valeurs par défaut restent celles de `.env.example`. Les tests exigent
+les identifiants dédiés et un identifiant d’environnement
+éphémère possédé ; le seed exige le mode fixture `enabled`. Aucun migrateur ou
+seed ne s’exécute au démarrage de l’API.
 
-Le registre initial contient deux comptes `example.test`. La création passe par
-Better Auth pour produire le hash ; une relance conserve intégralement un compte
-déjà présent. Le compte vérifié n’est marqué comme tel qu’après sa création.
+Le registre initial contient deux comptes `example.test`. Le hachage passe par
+l’API publique `better-auth/crypto`. Le registre ordonné prépare tous les
+scénarios sélectionnés avant la première mutation, puis les exécute dans l’ordre
+déclaré ; le nettoyage utilise l’ordre inverse. Une relance reconnaît les IDs
+utilisateur et compte réservés ainsi que la signature Better Auth complète. Elle
+remplace ensuite les comptes et leurs hashes dans une seule transaction pour
+restaurer leurs valeurs. Une collision interrompt toute la sélection avant
+mutation.
 Le nettoyage optionnel supprime seulement ces deux adresses, leurs dépendances
 auth et les jetons de réinitialisation dont la valeur référence leur identifiant,
 dans une transaction. Il reste explicite.

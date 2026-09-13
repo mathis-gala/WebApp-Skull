@@ -55,6 +55,9 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
   readiness injectables.
 - `apps/api/src/infrastructure/logging/logging.ts` : logger Pino et contrat de
   sérialisation HTTP nettoyé.
+- `apps/api/src/seeds/seed.ts` : contrat pur `SeedScenario`, préparation globale
+  avant mutation et exécution d’une sélection ; `apps/api/src/seeds/registry.ts`
+  possède l’ordre central et refuse les noms absents ou dupliqués.
 - `apps/api/src/openapi/config.ts` : chemin de documentation et version de l'API.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa

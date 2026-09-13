@@ -60,8 +60,9 @@ pnpm api:generate    # régénère OpenAPI et les types du client web
 pnpm api:check       # détecte une dérive des contrats générés
 pnpm db:generate     # génère une migration depuis le schéma
 pnpm db:migrate      # applique les migrations à la cible configurée
-pnpm db:seed -- --scenario auth # crée les deux comptes locaux idempotents
+pnpm db:seed -- --scenario auth # restaure les deux comptes locaux déterministes
 pnpm db:seed -- --scenario auth --clean # supprime seulement ces fixtures
+pnpm db:seed -- --all # exécute tous les scénarios dans l’ordre du registre
 pnpm db:studio       # ouvre Drizzle Studio
 pnpm dev:infra       # démarre PostgreSQL et Mailpit
 pnpm dev:down        # arrête les services sans supprimer leurs données

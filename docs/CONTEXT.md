@@ -11,8 +11,9 @@ Les écrans et les emails utilisent le catalogue français Paraglide. Les routes
 visibles sont françaises, sans préfixe de langue. Les emails sont capturés par
 Mailpit en développement ; aucun fournisseur réel n’est présupposé.
 
-Les migrations et fixtures passent par une garde de cible locale. Deux comptes
-auth fictifs peuvent être créés de façon idempotente. L’API journalise les
+Les migrations et fixtures passent par une garde de cible locale alignée sur la
+configuration Compose. Deux comptes auth aux IDs réservés peuvent être recréés
+de façon déterministe et atomique. L’API journalise les
 requêtes avec Pino, expose une readiness PostgreSQL bornée et ferme ses
 ressources à l’arrêt. La CI rejoue contrôles rapides, intégration et E2E dans
 des environnements distincts et recherche les secrets dans tout l’historique Git.

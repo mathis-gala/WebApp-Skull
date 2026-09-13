@@ -1,7 +1,7 @@
 export type DatabaseOperation = "migrate" | "seed"
 
 export type VerifiedDatabaseTarget = Readonly<{
-  databaseName: "webapp_skull" | "skull_auth_test"
+  databaseName: string
   databaseUrl: string
   environment: "development" | "test"
 }>
@@ -39,10 +39,32 @@ export function verifyDatabaseTarget(
   }
 
   const databaseName = decodeURIComponent(target.pathname.slice(1))
+  const developmentTarget = {
+    databaseName: source.POSTGRES_DB ?? "webapp_skull",
+    username: source.POSTGRES_USER ?? "webapp_skull",
+    password: source.POSTGRES_PASSWORD ?? "webapp_skull_dev",
+    port: source.POSTGRES_PORT ?? "5433",
+  }
   const expectedName =
-    environment === "development" ? "webapp_skull" : "skull_auth_test"
+    environment === "development"
+      ? developmentTarget.databaseName
+      : "skull_auth_test"
   if (databaseName !== expectedName) {
     refusal(`expected database ${expectedName}`)
+  }
+
+  const expectedCredentials =
+    environment === "development"
+      ? developmentTarget
+      : { username: "skull_auth_test", password: "isolated-fixture-only" }
+  if (
+    decodeURIComponent(target.username) !== expectedCredentials.username ||
+    decodeURIComponent(target.password) !== expectedCredentials.password
+  ) {
+    refusal("expected local database credentials")
+  }
+  if (environment === "development" && target.port !== developmentTarget.port) {
+    refusal(`development database port must be ${developmentTarget.port}`)
   }
 
   if (
@@ -52,8 +74,8 @@ export function verifyDatabaseTarget(
     refusal("an owned test run is required")
   }
 
-  if (operation === "seed" && source.DATABASE_FIXTURE_MODE !== "auth") {
-    refusal("fixture mode auth is required")
+  if (operation === "seed" && source.DATABASE_FIXTURE_MODE !== "enabled") {
+    refusal("fixture mode enabled is required")
   }
 
   return {

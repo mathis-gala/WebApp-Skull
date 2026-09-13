@@ -1,0 +1,12 @@
+import { createAuthSeedScenario } from "./auth.js"
+import type { AuthFixtureStore } from "./auth.js"
+import type { SeedScenario } from "./seed.js"
+
+export function createSeedRegistry(dependencies: {
+  authStore: AuthFixtureStore
+  hashPassword: (password: string) => Promise<string>
+}): ReadonlyArray<SeedScenario> {
+  return [
+    createAuthSeedScenario(dependencies.authStore, dependencies.hashPassword),
+  ]
+}

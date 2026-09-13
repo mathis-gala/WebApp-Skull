@@ -53,9 +53,12 @@ le retrait des anciennes technologies et les versions des images/actions.
 
 `pnpm setup` exige un `.env` local, démarre les services Compose puis applique
 les migrations. Avant de charger le client DB, le CLI exige `APP_ENV=development`,
-un hôte loopback et la base exacte `webapp_skull`. En test, il exige la base
-`skull_auth_test` et l'identifiant d’ownership créé par le harness. Staging et
-production sont toujours refusés par ces outils locaux.
+un hôte loopback et une URL concordant avec les variables Compose `POSTGRES_DB`,
+`POSTGRES_USER`, `POSTGRES_PASSWORD` et `POSTGRES_PORT` (valeurs de
+`.env.example` par défaut). En test, il exige la base et les identifiants dédiés
+`skull_auth_test`, ainsi que l'identifiant d’ownership créé par le harness ; le
+port reste dynamique. Staging et production sont toujours refusés par ces outils
+locaux.
 
 Le seed n'est jamais implicite :
 
@@ -63,10 +66,19 @@ Le seed n'est jamais implicite :
 pnpm db:seed -- --scenario auth
 ```
 
-`DATABASE_FIXTURE_MODE=auth` doit être présent. La commande crée, si absents,
+`DATABASE_FIXTURE_MODE=enabled` doit être présent. La commande recrée
 `verified@example.test` et `unverified@example.test` avec le mot de passe local
-public `Local-Only-Auth-2026!`. Elle conserve mot de passe et état de tout compte
-déjà présent, ne crée aucune session durable et peut être relancée.
+public `Local-Only-Auth-2026!`. Elle supprime puis recrée tout compte reconnu par
+sa signature afin de restaurer ses valeurs, ne crée aucune session durable
+et peut être relancée. Une adresse réservée occupée par un compte ne correspondant
+pas exactement à la fixture provoque un refus avant toute mutation.
+
+`pnpm db:seed -- --all` prépare tous les scénarios avant la première écriture,
+puis les exécute dans l’ordre du registre. Avec `--clean`, tous les scénarios
+sont préparés et nettoyés en ordre inverse. Le scénario auth possède des IDs
+réservés stables ; un compte qui reprend seulement son adresse ou son nom reste
+une collision. Le hachage Better Auth est terminé avant que la transaction
+remplace les utilisateurs et comptes reconnus.
 
 Le nettoyage est volontaire, utilise la même garde et supprime uniquement ces
 deux adresses avec leurs dépendances auth et jetons de réinitialisation, dans

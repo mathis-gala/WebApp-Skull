@@ -23,7 +23,7 @@ let verificationUrl = ""
 describe.skipIf(process.env.AUTH_TEST_SUITE === "e2e")(
   "real HTTP auth with isolated PostgreSQL and Mailpit",
   () => {
-    it("keeps both auth fixtures idempotent and without sessions", async () => {
+    it("creates both deterministic auth fixtures without sessions", async () => {
       const fixtures = await database.db.query.user.findMany({
         where: (user, { inArray }) =>
           inArray(user.email, [
@@ -44,7 +44,71 @@ describe.skipIf(process.env.AUTH_TEST_SUITE === "e2e")(
       expect(await database.db.query.verification.findMany()).toEqual([])
     })
 
-    it("does not change existing fixture passwords or verification flags", async () => {
+    it("rolls back the complete fixture replacement when an insert fails", async () => {
+      const verified = await database.db.query.user.findFirst({
+        where: eq(schema.user.email, "verified@example.test"),
+      })
+      const unverified = await database.db.query.user.findFirst({
+        where: eq(schema.user.email, "unverified@example.test"),
+      })
+      if (!verified || !unverified) throw new Error("Missing auth fixtures")
+
+      await database.db
+        .delete(schema.user)
+        .where(eq(schema.user.id, unverified.id))
+      await database.db.insert(schema.user).values({
+        id: unverified.id,
+        email: "fixture-id-blocker@example.test",
+        emailVerified: true,
+        name: "Non-fixture blocker",
+      })
+      await database.db
+        .update(schema.user)
+        .set({ emailVerified: false })
+        .where(eq(schema.user.id, verified.id))
+      await database.db
+        .update(schema.account)
+        .set({ password: "rollback-proof-hash" })
+        .where(eq(schema.account.userId, verified.id))
+
+      const failed = spawnSync(
+        process.execPath,
+        ["dist/cli/seed.js", "--all"],
+        {
+          cwd: ".",
+          env: process.env,
+          encoding: "utf8",
+        }
+      )
+      expect(failed.status).not.toBe(0)
+      expect(
+        await database.db.query.user.findFirst({
+          where: eq(schema.user.id, verified.id),
+        })
+      ).toMatchObject({ emailVerified: false })
+      expect(
+        await database.db.query.account.findFirst({
+          where: eq(schema.account.userId, verified.id),
+        })
+      ).toMatchObject({ password: "rollback-proof-hash" })
+      expect(
+        await database.db.query.user.findFirst({
+          where: eq(schema.user.id, unverified.id),
+        })
+      ).toMatchObject({ email: "fixture-id-blocker@example.test" })
+
+      await database.db
+        .delete(schema.user)
+        .where(eq(schema.user.id, unverified.id))
+      const restore = spawnSync(
+        process.execPath,
+        ["dist/cli/seed.js", "--all"],
+        { cwd: ".", env: process.env, encoding: "utf8" }
+      )
+      expect(restore.status, restore.stderr).toBe(0)
+    })
+
+    it("restores recognized fixtures deterministically with --all", async () => {
       const verified = await database.db.query.user.findFirst({
         where: eq(schema.user.email, "verified@example.test"),
       })
@@ -55,7 +119,7 @@ describe.skipIf(process.env.AUTH_TEST_SUITE === "e2e")(
 
       await database.db
         .update(schema.user)
-        .set({ emailVerified: false })
+        .set({ emailVerified: false, name: "Compte vérifié" })
         .where(eq(schema.user.id, verified.id))
       await database.db
         .update(schema.user)
@@ -66,29 +130,39 @@ describe.skipIf(process.env.AUTH_TEST_SUITE === "e2e")(
         .set({ password: "existing-password-hash" })
         .where(eq(schema.account.userId, verified.id))
 
-      const rerun = spawnSync(
-        process.execPath,
-        ["dist/cli/seed.js", "--scenario", "auth"],
-        {
-          cwd: ".",
-          env: process.env,
-          encoding: "utf8",
-        }
-      )
+      const rerun = spawnSync(process.execPath, ["dist/cli/seed.js", "--all"], {
+        cwd: ".",
+        env: process.env,
+        encoding: "utf8",
+      })
       expect(rerun.status, rerun.stderr).toBe(0)
 
-      const preservedVerified = await database.db.query.user.findFirst({
-        where: eq(schema.user.id, verified.id),
+      const restoredVerified = await database.db.query.user.findFirst({
+        where: eq(schema.user.email, verified.email),
       })
-      const preservedUnverified = await database.db.query.user.findFirst({
-        where: eq(schema.user.id, unverified.id),
+      const restoredUnverified = await database.db.query.user.findFirst({
+        where: eq(schema.user.email, unverified.email),
       })
       const account = await database.db.query.account.findFirst({
-        where: eq(schema.account.userId, verified.id),
+        where: eq(schema.account.userId, restoredVerified!.id),
       })
-      expect(preservedVerified?.emailVerified).toBe(false)
-      expect(preservedUnverified?.emailVerified).toBe(true)
-      expect(account?.password).toBe("existing-password-hash")
+      expect(restoredVerified?.emailVerified).toBe(true)
+      expect(restoredUnverified?.emailVerified).toBe(false)
+      expect(restoredVerified?.id).toBe(verified.id)
+      expect(account?.password).not.toBe("existing-password-hash")
+      const restoredLogin = await post("/sign-in/email", {
+        email: verified.email,
+        password,
+      })
+      expect(restoredLogin.status).toBe(200)
+      expect(
+        (
+          await post("/sign-out", {}).set(
+            "Cookie",
+            cookieHeader(restoredLogin.headers["set-cookie"])
+          )
+        ).status
+      ).toBe(200)
       expect(await database.db.query.session.findMany()).toEqual([])
       expect(await database.db.query.verification.findMany()).toEqual([])
     })
@@ -186,6 +260,9 @@ describe.skipIf(process.env.AUTH_TEST_SUITE === "e2e")(
       ).toBe(403)
     })
     it("resets the password once and revokes old sessions", async () => {
+      await database.db
+        .update(schema.rateLimit)
+        .set({ lastRequest: Date.now() - 60_000 })
       await dispatcher.drain()
       const resetUrl = new URL(await latestMailUrl())
       const redirect = await request(app.getHttpServer()).get(
@@ -403,6 +480,33 @@ describe.skipIf(process.env.AUTH_TEST_SUITE === "e2e")(
       await database.db
         .delete(schema.verification)
         .where(eq(schema.verification.id, unrelatedVerificationId))
+
+      const collisionId = "reserved-address-collision"
+      await database.db.insert(schema.user).values({
+        id: collisionId,
+        email: "verified@example.test",
+        name: "Real local account",
+        emailVerified: true,
+      })
+      const refusedSeed = spawnSync(
+        process.execPath,
+        ["dist/cli/seed.js", "--all"],
+        { cwd: ".", env: process.env, encoding: "utf8" }
+      )
+      expect(refusedSeed.status).not.toBe(0)
+      expect(
+        await database.db.query.user.findFirst({
+          where: eq(schema.user.id, collisionId),
+        })
+      ).toMatchObject({ name: "Real local account" })
+      expect(
+        await database.db.query.user.findFirst({
+          where: eq(schema.user.id, otherUser.id),
+        })
+      ).toBeTruthy()
+      await database.db
+        .delete(schema.user)
+        .where(eq(schema.user.id, collisionId))
     })
   }
 )
