@@ -3,11 +3,12 @@ import { httpStatus } from "@/lib/api/http-status"
 import type { QueryClient } from "@tanstack/react-query"
 
 import { apiClient } from "../api/client"
+import { privateQueryKeyPrefix } from "../query/query-keys"
 
 export class AuthenticationRequiredError extends Error {}
 
 export const currentUserQueryOptions = queryOptions({
-  queryKey: ["auth", "current-user"],
+  queryKey: [...privateQueryKeyPrefix, "auth", "current-user"],
   queryFn: async ({ signal }) => {
     const { data, response } = await apiClient.GET("/api/me", { signal })
 
@@ -36,6 +37,6 @@ export function loadCurrentUserForProtectedRoute(queryClient: QueryClient) {
 }
 
 export async function clearPrivateCache(queryClient: QueryClient) {
-  await queryClient.cancelQueries()
-  queryClient.clear()
+  await queryClient.cancelQueries({ queryKey: privateQueryKeyPrefix })
+  queryClient.removeQueries({ queryKey: privateQueryKeyPrefix })
 }

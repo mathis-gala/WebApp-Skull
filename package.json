@@ -18,7 +18,8 @@
     "format:check": "prettier --check .",
     "setup": "docker compose up -d --wait && pnpm db:migrate",
     "test": "turbo test",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "test:integration": "node scripts/test-auth.mjs"
   },
   "devDependencies": {
     "prettier": "3.8.3",

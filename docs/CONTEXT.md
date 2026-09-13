@@ -2,28 +2,28 @@
 
 ## État actuel
 
-Le produit fournit une application web avec inscription, connexion,
-déconnexion et session par cookie. L'API utilise NestJS sur Express ; Better
-Auth possède les endpoints `/api/auth/*`. PostgreSQL stocke uniquement les
-données d'authentification.
+L’application propose inscription, vérification d’adresse, connexion explicite,
+récupération de mot de passe et déconnexion. Better Auth possède les endpoints
+`/api/auth/*` ; NestJS protège `GET /api/me`. PostgreSQL stocke l’authentification
+et les compteurs de limitation des tentatives.
 
-L'accueil est une route cliente protégée. Il charge l'identité depuis
-`GET /api/me`, dont le contrat OpenAPI génère le client TypeScript du web. Une
-session sans adresse vérifiée est refusée par les routes Nest protégées.
+Les écrans et les emails utilisent le catalogue français Paraglide. Les routes
+visibles sont françaises, sans préfixe de langue. Les emails sont capturés par
+Mailpit en développement ; aucun fournisseur réel n’est présupposé.
 
-Le domaine produit au-delà de l'authentification n'est pas encore défini.
-Aucune fonctionnalité de démonstration ne doit être ajoutée pour combler ce
-vide.
+Le domaine produit au-delà de l’authentification reste à définir. Ne pas ajouter
+une fonctionnalité de démonstration pour combler ce vide.
 
 ## Carte documentaire
 
-- [PRODUCT.md](PRODUCT.md) : capacités et limites utilisateur.
-- [architecture.md](architecture.md) : frontières et flux techniques.
-- [DESIGN.md](DESIGN.md) : conventions d'interface.
+- [PRODUCT.md](PRODUCT.md) : capacités et règles utilisateur.
+- [ARCHITECTURE.md](ARCHITECTURE.md) : frontières et flux techniques.
+- [DESIGN.md](DESIGN.md) : conventions d’interface.
 - [REUSE.md](REUSE.md) : catalogue des éléments partagés.
 - [DEVELOPMENT.md](DEVELOPMENT.md) : environnement et commandes.
 
 ## Travail prévu
 
-La vérification d'adresse côté email, la récupération de mot de passe, les
-emails, les seeders, les logs structurés et la CI ne sont pas encore livrés.
+Les seeders généraux, les logs HTTP structurés avec redaction, la readiness SQL
+et la CI restent à livrer. Le suivi des envois email est local au processus,
+sans file durable ni garantie de livraison après un crash.

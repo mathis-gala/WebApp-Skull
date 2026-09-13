@@ -1,0 +1,37 @@
+{
+  "name": "@workspace/email",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@workspace/core": "workspace:*",
+    "@workspace/i18n": "workspace:*",
+    "@react-email/components": "1.0.12",
+    "@react-email/render": "2.1.0",
+    "nodemailer": "10.0.9",
+    "react": "^19.2.6",
+    "zod": "4.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.5.2",
+    "@types/react": "^19",
+    "@types/nodemailer": "7.0.11",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0",
+    "eslint": "9.36.0",
+    "@tanstack/eslint-config": "0.3.2"
+  }
+}

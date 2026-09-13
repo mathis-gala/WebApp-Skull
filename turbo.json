@@ -7,7 +7,16 @@
     "BETTER_AUTH_URL",
     "DATABASE_URL",
     "VITE_API_URL",
-    "WEB_URL"
+    "WEB_URL",
+    "APP_ENV",
+    "EMAIL_MODE",
+    "EMAIL_FROM",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_SECURE",
+    "SMTP_USER",
+    "SMTP_PASSWORD",
+    "EMAIL_ALLOWED_RECIPIENTS"
   ],
   "tasks": {
     "build": {
@@ -32,10 +41,11 @@
       "dependsOn": ["^format"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^build", "^typecheck"]
     },
     "test": {
-      "dependsOn": ["^test"]
+      "dependsOn": ["^build", "^test"],
+      "cache": false
     },
     "dev": {
       "cache": false,
@@ -46,7 +56,19 @@
       "cache": false,
       "interruptible": true,
       "persistent": true,
-      "with": ["@workspace/database#dev"]
+      "with": [
+        "@workspace/database#dev",
+        "@workspace/email#dev",
+        "@workspace/i18n#dev"
+      ]
+    },
+    "@workspace/i18n#build": {
+      "outputs": ["src/generated/**"]
+    },
+    "web#dev": {
+      "with": ["@workspace/i18n#dev"],
+      "cache": false,
+      "persistent": true
     }
   }
 }

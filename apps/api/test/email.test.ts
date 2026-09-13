@@ -1,0 +1,43 @@
+import { describe, expect, it } from "vitest"
+import { AuthEmailDispatcher } from "../src/infrastructure/email/auth-email-dispatcher.js"
+import type { EmailEvent } from "../src/infrastructure/email/auth-email-dispatcher.js"
+
+const input = {
+  kind: "verification",
+  to: "test@example.test",
+  url: "https://example.test?token=private-token",
+  locale: "fr",
+} as const
+
+describe("tracked auth email dispatch", () => {
+  it("returns immediately and drains a failed delivery without leaking provider details", async () => {
+    const events: Array<EmailEvent> = []
+    const dispatcher = new AuthEmailDispatcher(
+      {
+        send: async () => {
+          throw new Error(
+            "private-password smtp.example.test test@example.test"
+          )
+        },
+      },
+      (event) => {
+        events.push(event)
+      }
+    )
+    dispatcher.enqueue(input)
+    await dispatcher.drain()
+    expect(events).toEqual([{ event: "email.failed", kind: "verification" }])
+  })
+  it("bounds shutdown when delivery never settles", async () => {
+    const events: Array<EmailEvent> = []
+    const dispatcher = new AuthEmailDispatcher(
+      { send: () => new Promise(() => {}) },
+      (event) => {
+        events.push(event)
+      }
+    )
+    dispatcher.enqueue(input)
+    await dispatcher.drain(20)
+    expect(events).toEqual([{ event: "email.drain_timeout" }])
+  })
+})

@@ -24,19 +24,26 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `apps/web/src/lib/api/client.ts` : client OpenAPI typé, configuré avec les
   cookies de session.
 - `apps/web/src/lib/query/query-client.ts` : configuration TanStack Query.
+- `apps/web/src/lib/query/query-keys.ts` : préfixe `privateQueryKeyPrefix` pour
+  toutes les queries dépendant de la session ou contenant des données privées.
+  Construire leurs clés avec `[...privateQueryKeyPrefix, feature, ...identifiants]`.
+  Les transitions d’identité annulent puis retirent seulement ce préfixe ;
+  les queries publiques, y compris celles en cours, sont conservées.
 - `apps/web/src/lib/api/config.ts` : URL publique de l'API.
 - `apps/web/src/lib/api/http-status.ts` : statuts nommés utilisés par le client.
-- `apps/web/src/features/auth/schemas/auth-form.constraints.ts` : contraintes de
-  saisie des formulaires d'authentification. Le minimum du mot de passe vient du
-  contrat auth partagé, également appliqué par Better Auth.
+- `apps/web/src/features/auth/schemas/auth-form.constraints.ts` : contrainte du nom
+  propre aux formulaires d’authentification. Les schémas utilisent directement
+  les bornes de mot de passe du contrat auth partagé.
 
-- `packages/contracts/src/auth.constraints.ts` : minimum du mot de passe partagé
+- `packages/contracts/src/auth.constraints.ts` : bornes du mot de passe partagées
   entre validation web et configuration serveur Better Auth.
 
 ## Serveur
 
 - `apps/api/src/infrastructure/auth/guard.ts` : protection globale Nest et
   décorateurs `Public` et `CurrentUser`.
+- `apps/api/src/infrastructure/auth/auth.config.ts` : durées de session et de
+  jetons, fenêtre et quotas du rate limit Better Auth.
 - `packages/contracts/src/identity.ts` : forme publique de l'identité courante.
 - `apps/api/src/infrastructure/http/http-error.filter.ts` : enveloppe d'erreur
   des controllers Nest ; ne pas l'appliquer aux routes Better Auth.
@@ -46,3 +53,25 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa
 source et sa règle d'usage.
+
+## Auth et messages
+
+- `packages/core/src/email.ts` : port email indépendant des technologies.
+- `packages/email/src/auth-email.tsx` : rendu HTML et texte des emails auth,
+  avec locale explicitement fournie par le consommateur.
+- `packages/email/src/config.ts` : modes d’envoi validés, capture locale,
+  production SMTP et allowlist exacte en staging.
+- `apps/api/src/infrastructure/email/auth-email-dispatcher.ts` : envois suivis,
+  événements nettoyés et drainage à l’arrêt.
+- `packages/i18n/messages/fr.json` : catalogue commun ; importer uniquement les
+  fonctions requises depuis `@workspace/i18n/messages`.
+- `packages/i18n/src/config.ts` : `DEFAULT_LOCALE` et `SUPPORTED_LOCALES`
+  dérivés du runtime Paraglide généré.
+- `apps/web/src/features/auth/components/auth-input.tsx` : champ auth avec label,
+  erreurs associées et saisie contrôlée ; réutiliser dans les formulaires auth.
+- `apps/web/src/features/auth/components/auth-panel.tsx` : cadre commun aux
+  étapes d’authentification.
+- `apps/web/src/features/auth/hooks` : inscription, connexion, demandes email,
+  reset et déconnexion ; ne pas importer une route depuis un hook.
+- `apps/web/src/lib/auth/redirect.ts` : `getSafeInternalRedirect`, validation restrictive d’un retour interne.
+- `apps/web/src/lib/seo/private-head.ts` : métadonnées auth/privé sans indexation.
