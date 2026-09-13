@@ -5,11 +5,13 @@ import { authClient } from "@/lib/auth/auth-client"
 import { emailSchema } from "../schemas/auth-form"
 import { authErrorMessage } from "../auth-error"
 
+const EMAIL_REQUEST_DEFAULT_VALUES = { email: "" }
+
 export function useEmailRequestForm(kind: "verification" | "reset") {
   const [serverError, setServerError] = useState<string>()
   const [received, setReceived] = useState(false)
   const form = useForm({
-    defaultValues: { email: "" },
+    defaultValues: EMAIL_REQUEST_DEFAULT_VALUES,
     validators: { onSubmit: emailSchema },
     onSubmit: async ({ value }) => {
       setServerError(undefined)

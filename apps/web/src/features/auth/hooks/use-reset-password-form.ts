@@ -8,11 +8,16 @@ import { clearPrivateCache } from "@/lib/auth/current-user"
 import { resetPasswordSchema } from "../schemas/auth-form"
 import { authErrorMessage } from "../auth-error"
 
+const RESET_PASSWORD_DEFAULT_VALUES = {
+  password: "",
+  confirmPassword: "",
+}
+
 export function useResetPasswordForm(token: string) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string>()
   const form = useForm({
-    defaultValues: { password: "", confirmPassword: "" },
+    defaultValues: RESET_PASSWORD_DEFAULT_VALUES,
     validators: { onSubmit: resetPasswordSchema },
     onSubmit: async ({ value }) => {
       setServerError(undefined)

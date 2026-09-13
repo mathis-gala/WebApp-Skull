@@ -7,11 +7,13 @@ import { clearPrivateCache } from "@/lib/auth/current-user"
 import { signInSchema } from "../schemas/auth-form"
 import { authErrorMessage } from "../auth-error"
 
+const SIGN_IN_DEFAULT_VALUES = { email: "", password: "" }
+
 export function useSignInForm(redirect: string) {
   const router = useRouter()
   const [serverError, setServerError] = useState<string>()
   const form = useForm({
-    defaultValues: { email: "", password: "" },
+    defaultValues: SIGN_IN_DEFAULT_VALUES,
     validators: { onSubmit: signInSchema },
     onSubmit: async ({ value }) => {
       setServerError(undefined)

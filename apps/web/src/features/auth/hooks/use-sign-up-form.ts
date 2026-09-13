@@ -7,11 +7,13 @@ import { clearPrivateCache } from "@/lib/auth/current-user"
 import { signUpSchema } from "../schemas/auth-form"
 import { authErrorMessage } from "../auth-error"
 
+const SIGN_UP_DEFAULT_VALUES = { name: "", email: "", password: "" }
+
 export function useSignUpForm() {
   const router = useRouter()
   const [serverError, setServerError] = useState<string>()
   const form = useForm({
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: SIGN_UP_DEFAULT_VALUES,
     validators: { onSubmit: signUpSchema },
     onSubmit: async ({ value }) => {
       setServerError(undefined)
