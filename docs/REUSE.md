@@ -58,6 +58,11 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `apps/api/src/seeds/seed.ts` : contrat pur `SeedScenario`, préparation globale
   avant mutation et exécution d’une sélection ; `apps/api/src/seeds/registry.ts`
   possède l’ordre central et refuse les noms absents ou dupliqués.
+- `apps/api/src/seeds/auth/scenario.ts` : scénario et fixtures auth sans
+  dépendance à Drizzle.
+- `apps/api/src/seeds/auth/store.ts` : adaptateur de
+  persistance des fixtures auth ; il centralise la détection des IDs réservés et
+  les remplacements/nettoyages transactionnels.
 - `apps/api/src/openapi/config.ts` : chemin de documentation et version de l'API.
 
 Ajouter ici seulement une capacité destinée à plusieurs consommateurs, avec sa

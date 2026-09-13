@@ -1,5 +1,5 @@
-import { createAuthSeedScenario } from "./auth.js"
-import type { AuthFixtureStore } from "./auth.js"
+import { createAuthSeedScenario } from "./auth/scenario.js"
+import type { AuthFixtureStore } from "./auth/scenario.js"
 import type { SeedScenario } from "./seed.js"
 
 export function createSeedRegistry(dependencies: {

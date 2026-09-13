@@ -4,13 +4,13 @@ import {
   AUTH_FIXTURES,
   AUTH_FIXTURE_PASSWORD,
   createAuthSeedScenario,
-} from "../src/seeds/auth.js"
+} from "../src/seeds/auth/scenario.js"
 import { runSeedCommand } from "../src/seeds/seed.js"
 import type {
   AuthFixtureStore,
   ExistingAuthFixture,
   PreparedAuthFixture,
-} from "../src/seeds/auth.js"
+} from "../src/seeds/auth/scenario.js"
 import type { SeedScenario } from "../src/seeds/seed.js"
 
 const hashPassword = vi.fn(async (password: string) => `hash:${password}`)

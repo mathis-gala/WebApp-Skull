@@ -107,7 +107,9 @@ déclaré ; le nettoyage utilise l’ordre inverse. Une relance reconnaît les I
 utilisateur et compte réservés ainsi que la signature Better Auth complète. Elle
 remplace ensuite les comptes et leurs hashes dans une seule transaction pour
 restaurer leurs valeurs. Une collision interrompt toute la sélection avant
-mutation.
+mutation. Le scénario auth reste indépendant de Drizzle ; l’adaptateur
+`seeds/auth/store.ts` possède les requêtes et transactions,
+et le CLI ne fait que composer ces dépendances après la garde de cible.
 Le nettoyage optionnel supprime seulement ces deux adresses, leurs dépendances
 auth et les jetons de réinitialisation dont la valeur référence leur identifiant,
 dans une transaction. Il reste explicite.

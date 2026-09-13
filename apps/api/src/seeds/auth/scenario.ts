@@ -1,4 +1,4 @@
-import type { SeedScenario } from "./seed.js"
+import type { SeedScenario } from "../seed.js"
 
 export const AUTH_FIXTURE_PASSWORD = "Local-Only-Auth-2026!"
 export type AuthFixture = Readonly<{
