@@ -18,6 +18,7 @@
     "@nestjs/core": "11.2.3",
     "@nestjs/platform-express": "11.2.3",
     "@nestjs/swagger": "11.4.7",
+    "@nestjs/throttler": "6.7.0",
     "@workspace/config": "workspace:*",
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",

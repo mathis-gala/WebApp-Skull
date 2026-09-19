@@ -5,7 +5,8 @@
 L’application propose inscription, vérification d’adresse, connexion explicite,
 récupération de mot de passe et déconnexion. Better Auth possède les endpoints
 `/api/auth/*` ; NestJS protège `GET /api/me`. PostgreSQL stocke l’authentification
-et les compteurs de limitation des tentatives.
+et les compteurs de limitation Better Auth. Les controllers Nest possèdent leur
+propre quota en mémoire par processus ; les sondes de santé en sont exclues.
 
 Les écrans et les emails utilisent le catalogue français Paraglide. Les routes
 visibles sont françaises, sans préfixe de langue. Les emails sont capturés par
@@ -33,4 +34,6 @@ une fonctionnalité de démonstration pour combler ce vide.
 
 Le suivi des envois email est local au processus, sans file durable ni garantie
 de livraison après un crash. Aucun environnement de staging ou fournisseur SMTP
-réel n’est exercé par la CI.
+réel n’est exercé par la CI. Le rate limit Nest n’est pas partagé entre les
+instances ; un déploiement multi-instance exigera un adaptateur de stockage
+commun.

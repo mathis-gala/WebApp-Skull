@@ -161,6 +161,15 @@ export interface operations {
           "application/json": components["schemas"]["ApiErrorDto"]
         }
       }
+      /** @description Too many requests */
+      429: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ApiErrorDto"]
+        }
+      }
     }
   }
 }

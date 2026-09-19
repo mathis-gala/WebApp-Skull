@@ -8,12 +8,15 @@ import { ZodResponse } from "nestjs-zod"
 
 import { CurrentUser } from "../../infrastructure/auth/guard.js"
 import { ApiErrorDto } from "../../infrastructure/http/api-error.dto.js"
+import { apiRateLimitConfig } from "../../infrastructure/rate-limit/rate-limit.config.js"
+import { RateLimit } from "../../infrastructure/rate-limit/rate-limit.decorators.js"
 import { CurrentUserDto } from "./identity.dto.js"
 import type { AuthSession } from "../../infrastructure/auth/session.js"
 
 @Controller("api")
 export class IdentityController {
   @Get("me")
+  @RateLimit(apiRateLimitConfig.currentUser)
   @ApiCookieAuth()
   @ApiUnauthorizedResponse({
     description: "Authentication required",
