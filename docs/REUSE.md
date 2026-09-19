@@ -47,6 +47,13 @@ Les styles et tokens communs sont dans `packages/ui/src/styles/globals.css`.
 - `packages/contracts/src/identity.ts` : forme publique de l'identité courante.
 - `apps/api/src/infrastructure/http/http-error.filter.ts` : enveloppe d'erreur
   des controllers Nest ; ne pas l'appliquer aux routes Better Auth.
+- `apps/api/src/infrastructure/rate-limit/rate-limit.decorators.ts` : décorateurs
+  `RateLimit` et `SkipRateLimit` pour remplacer ou désactiver le quota global sur
+  un controller ou une méthode Nest.
+- `apps/api/src/infrastructure/rate-limit/rate-limit.config.ts` : quota Nest par
+  défaut et règles propres aux endpoints. Le tracker natif utilise l’adresse
+  Express non proxifiée et normalise IPv6. Les quotas Better Auth restent dans
+  `infrastructure/auth/auth.config.ts`.
 - `packages/database/src/client.ts` : création et fermeture du client Drizzle.
 - `packages/database/src/config.ts` : réglages du pool PostgreSQL.
 - `packages/database/src/target.ts` : garde commune exécutée avant toute

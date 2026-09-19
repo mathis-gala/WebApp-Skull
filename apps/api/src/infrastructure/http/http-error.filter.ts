@@ -25,6 +25,10 @@ const ERROR_RESPONSES: Readonly<Record<number, ErrorResponse>> = {
     code: "NOT_FOUND",
     message: "Resource not found",
   },
+  [HttpStatus.TOO_MANY_REQUESTS]: {
+    code: "RATE_LIMITED",
+    message: "Too many requests",
+  },
   [HttpStatus.SERVICE_UNAVAILABLE]: {
     code: "SERVICE_UNAVAILABLE",
     message: "Service unavailable",

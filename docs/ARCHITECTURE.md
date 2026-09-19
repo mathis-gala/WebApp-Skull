@@ -15,6 +15,15 @@ Better Auth est monté sous `/api/auth` avant le parseur JSON Nest. Un guard
 global protège les controllers Nest, sauf ceux marqués publics. Les routes de
 santé `/health/live` et `/health/ready` sont publiques.
 
+Un second guard global Nest Throttler limite les controllers par pair réseau.
+Express ne faisant confiance à aucun proxy, l’adresse vient du socket et les
+en-têtes clients tels que `X-Forwarded-For` sont ignorés. Le tracker natif
+normalise aussi les sous-réseaux IPv6. `@RateLimit` remplace le quota sur un
+controller ou une méthode et documente la réponse 429 ; `@SkipRateLimit` exclut
+les sondes de santé. Son stockage est en mémoire, isolé par processus. Une
+future exécution multi-instance devra injecter un stockage partagé dans
+`ThrottlerModule`, sans modifier les controllers.
+
 `GET /api/me` utilise `@CurrentUser()` pour lire l'identité attachée par le
 guard. Il expose seulement `id`, `name`, `email` et `emailVerified`. Le pipe
 Zod global valide les DTO d'entrée et l'intercepteur Zod vérifie les réponses.
@@ -125,6 +134,9 @@ un proxy partagent actuellement son quota réseau.
 
 Better Auth gère les tokens, mots de passe, sessions et rate limits persistés.
 La migration incrémentale `0001` ajoute `rate_limit` à la baseline publiée.
+Ce quota reste distinct de celui de Nest : `/api/auth/*` est monté directement
+dans Express avant les guards, tandis que les controllers `/api/*` utilisent le
+quota Nest et l’enveloppe d’erreur HTTP commune.
 Les callbacks confient les emails au dispatcher sans attendre SMTP. Chaque
 promesse est suivie, son erreur traitée sans contenu fournisseur, et l’arrêt
 attend les envois au plus 15 secondes. Le transport est borné à 10 secondes.

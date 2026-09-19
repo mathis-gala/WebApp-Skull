@@ -16,8 +16,10 @@ un nouveau lien de vérification ou un changement de mot de passe.
 - La session dure 7 jours et peut être renouvelée après un jour.
 - Les demandes d’email ne révèlent pas si un compte existe. Une demande reçue
   ne garantit pas que le message a été livré ; le renvoi reste disponible.
-- Les tentatives sensibles sont limitées à 5 par minute par adresse réseau
-  et endpoint ; le plafond général est de 100 par minute.
+- Better Auth limite les tentatives sensibles à 5 par minute par adresse réseau
+  et endpoint ; son plafond général est de 100 par minute.
+- Les controllers Nest acceptent 120 requêtes par minute et pair réseau par
+  endpoint ; `/api/me` en accepte 30. Les sondes de santé restent disponibles.
 - Interface et chemins français, aucune seconde langue activée.
 
 ## Limites

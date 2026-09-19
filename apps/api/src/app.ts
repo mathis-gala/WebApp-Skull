@@ -12,10 +12,12 @@ import cors from "cors"
 import express from "express"
 import { ZodSerializerInterceptor, ZodValidationPipe } from "nestjs-zod"
 import { Logger as PinoNestLogger } from "nestjs-pino"
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler"
 
 import { AUTH_SESSION_READER, AuthGuard } from "./infrastructure/auth/guard.js"
 import { HttpErrorFilter } from "./infrastructure/http/http-error.filter.js"
 import { requestContext } from "./infrastructure/http/request-context.js"
+import { apiThrottlerOptions } from "./infrastructure/rate-limit/rate-limit.config.js"
 import {
   createApiLogger,
   createHttpLogging,
@@ -47,7 +49,7 @@ export async function createApiApp(
   const httpLogging = createHttpLogging(logger)
 
   @Module({
-    imports: [httpLogging.module],
+    imports: [httpLogging.module, ThrottlerModule.forRoot(apiThrottlerOptions)],
     controllers: [HealthController, IdentityController],
     providers: [
       { provide: AUTH_SESSION_READER, useValue: dependencies.getSession },
@@ -56,6 +58,7 @@ export async function createApiApp(
         provide: READINESS_TIMEOUT,
         useValue: dependencies.readinessTimeoutMs ?? 2000,
       },
+      { provide: APP_GUARD, useClass: ThrottlerGuard },
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: APP_PIPE, useClass: ZodValidationPipe },
       { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },

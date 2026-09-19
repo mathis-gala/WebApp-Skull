@@ -140,6 +140,21 @@ chemin sans query, statut et durée, sans headers, body, cookie, adresse email, 
 token, URL d’action ou message SMTP. `/health/live` ne contacte aucun service ;
 `/health/ready` sonde PostgreSQL et répond 503 après deux secondes au plus.
 
+## Rate limits
+
+Les controllers Nest utilisent un quota global en mémoire par pair réseau.
+Express ne faisant confiance à aucun proxy, l’adresse vient du socket et les
+en-têtes `X-Forwarded-For` envoyés par un client ne changent pas le tracker.
+Nest Throttler normalise les sous-réseaux IPv6. `/api/me` démontre la surcharge
+d’une règle avec `@RateLimit` et les sondes de santé portent `@SkipRateLimit`.
+Ne configurer `trust proxy` qu’avec une chaîne de proxies connue et adapter alors
+explicitement cette règle.
+
+Le stockage Nest est propre à chaque processus : les quotas ne sont donc pas
+agrégés entre plusieurs replicas. Avant un déploiement multi-instance, injecter
+un adaptateur de stockage partagé compatible Nest Throttler. `/api/auth/*` ne
+passe pas par ce guard et conserve le rate limit PostgreSQL de Better Auth.
+
 ## CI
 
 `.github/workflows/ci.yml` utilise Node 24.21.0 et pnpm 12.4.1. Les actions sont

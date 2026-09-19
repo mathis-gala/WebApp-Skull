@@ -13,6 +13,7 @@ import {
 
 import { Public } from "../../infrastructure/auth/guard.js"
 import { ApiErrorDto } from "../../infrastructure/http/api-error.dto.js"
+import { SkipRateLimit } from "../../infrastructure/rate-limit/rate-limit.decorators.js"
 import {
   DATABASE_READINESS,
   READINESS_TIMEOUT,
@@ -26,6 +27,7 @@ class HealthResponseDto {
 }
 
 @Controller("health")
+@SkipRateLimit()
 export class HealthController {
   constructor(
     @Inject(DATABASE_READINESS)
